@@ -8,7 +8,7 @@ import context
 ball1 = o80_pam.BallFrontEnd("ball1")
 ball2 = o80_pam.BallFrontEnd("ball2")
 robot = o80_pam.JointFrontEnd("robot")
-contact = pam_mujoco.get_contact("table") 
+hit_point = o80_pam.HitPointFrontEnd("hit_point")
 
 pam_mujoco.reset_contact("table")
 
@@ -17,6 +17,7 @@ pam_mujoco.reset_contact("table")
 
 print("starting state ball1: {}".format(ball1.latest()))
 print("starting state ball2: {}".format(ball2.latest()))
+
 
 # target position of balls
 position1 = (0.5,3,1)
@@ -37,14 +38,16 @@ ball1.pulse()
 ball2.pulse()
 robot.pulse()
 
-time.sleep(3)
 
 print("reached state ball1: {}".format(ball1.latest()))
 print("reached state ball2: {}".format(ball2.latest()))
 print("reached state robot: {}".format(robot.latest()))
 
+time.sleep(3)
+
 
 # reading pre-recorded trajectories
+
 
 index1,trajectory1 = list(context.BallTrajectories().random_trajectory())
 index2,trajectory2 = list(context.BallTrajectories().random_trajectory())
@@ -73,6 +76,39 @@ for trajectory,ball in zip((trajectory1,trajectory2),(ball1,ball2)):
     total_duration = duration_s * len(trajectory)
     for traj_point in trajectory:
         ball.add_command(traj_point.position,traj_point.velocity,
-                     duration,o80.Mode.QUEUE)
-ball1.pulse()
-ball2.pulse()
+                         duration,o80.Mode.QUEUE)
+        ball1.pulse()
+        ball2.pulse()
+
+
+# monitoring for contact
+# note: contact will not happen at all the runs of this executable,
+# as the virtual table heights does not match exactly the height of the
+# real table used for the recording of the ball trajectory.
+
+print("\nmonitoring for contact ...")
+time_start = time.time()
+contact = None
+
+while time.time()-time_start < 5:
+
+    # monitoring contact
+    contact = pam_mujoco.get_contact("table") 
+    if contact.contact_occured:
+        break
+
+    # having the goal following the ball
+    position = ball2.latest().get_position()
+    hit_point.add_command(position,[0,0,0],o80.Mode.OVERWRITE)
+    hit_point.pulse()
+
+if not contact.contact_occured:
+    print("no contact between ball and table! "
+          "(minimal distance: {})".format(contact.minimal_distance))
+else:
+    print("contact occured\n"
+          "\tposition: {}\n"
+          "\ttime stamp: {}".format(contact.position,contact.time_stamp))
+
+
+print()

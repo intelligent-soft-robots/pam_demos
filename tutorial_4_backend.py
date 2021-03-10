@@ -11,6 +11,7 @@ items = pam_mujoco.model_factory(model_name,
                                  nb_balls=2,
                                  robot1=True,
                                  goal=True,
+                                 hit_point=True,
                                  ball_colors=((1,0,0,1),(0,0,1,1)))
 
 # some config for mujoco
@@ -28,6 +29,7 @@ ball2 = items["balls"][1]
 table = items["table"]
 robot = items["robot"]
 goal = items["goal"]
+hit_point = items["hit_point"]
 
 # to allow frontend to control the first ball
 pam_mujoco.add_o80_ball_control("ball1",ball1)
@@ -42,6 +44,9 @@ pam_mujoco.add_o80_ball_control_until_contact("ball2","table",ball2)
 
 # to allow frontend to control the goal
 pam_mujoco.add_o80_goal_control("goal",goal)
+
+# to allow frontend to control the hit point
+pam_mujoco.add_o80_hit_point_control("hit_point",hit_point)
 
 # to allow frontend to control the robot's joint
 # (i.e. angles and angular velocities)
