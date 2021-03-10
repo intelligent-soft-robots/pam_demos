@@ -34,9 +34,8 @@ def _dropping(ball,start,end,duration):
     # starting with clean contact
     pam_mujoco.reset_contact("table")
     # going back to start while avoiding the table,
-    # then moving to end, and printing if a contact occured
     _go_back_to_start(ball,start)
-    # starting with new contact
+    # going to end point
     velocity = _velocity(start,end,duration)
     ball.add_command(end,velocity,o80.Duration_us.seconds(duration),o80.Mode.QUEUE)
     ball.pulse_and_wait()
@@ -52,5 +51,11 @@ start = (0.5,1,0.5)
 
 
 # dropping left to right
-end = (1.0,1.5,-1)
+#end = (1.0,1.5,-1)
+#_dropping(ball,start,end,duration)
+
+
+# dropping back to front
+start = (1.0,1.5,0.5)
+end = (1.0,0.5,-1.0)
 _dropping(ball,start,end,duration)
