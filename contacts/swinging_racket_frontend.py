@@ -37,21 +37,20 @@ def _play_contact(joints_start,joints_end,duration_racket,
                      o80.Duration_us.milliseconds(duration_ball),o80.Mode.QUEUE)
     robot.add_command(joints_end,(0,0,0,0),
                       o80.Duration_us.milliseconds(duration_racket),o80.Mode.QUEUE)
-
     
     ball.pulse()
     robot.pulse()
-
+    
     time.sleep(max(duration_racket*1e-3,duration_ball*1e-3))
 
 
 
-    
-joints_start = (-math.pi/4.0,+math.pi/4.0,
-                -math.pi/8.0,+math.pi/4.0)
-joints_end = (+math.pi/4.0,+math.pi/4.0,
-                -math.pi/8.0,+math.pi/4.0)
-ball_start = (0.9,1.5,0.25)
-ball_end = (0.95,-1.0,0.2)
-_play_contact(joints_start,joints_end,500,
-              ball_start,ball_end,500)
+for _ in range(10):
+    joints_start = (-math.pi/4.0,+math.pi/4.0,
+                    -math.pi/8.0,+math.pi/4.0)
+    joints_end = (+math.pi/4.0,+math.pi/4.0,
+                    -math.pi/8.0,+math.pi/4.0)
+    ball_start = (0.9,1.5,0.25)
+    ball_end = (0.95,-1.0,0.2)
+    _play_contact(joints_start,joints_end,500,
+                  ball_start,ball_end,500)

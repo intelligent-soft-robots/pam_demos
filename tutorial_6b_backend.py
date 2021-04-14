@@ -3,7 +3,7 @@ import o80_pam
 
 
 model_name = "pam_tutorial_6"
-segment_id = "pam_tutorial_6"
+mujoco_id = "tutorial_6_mujoco_id"
 
 items = pam_mujoco.model_factory(model_name,
                                  table=True,robot1=True,
@@ -12,22 +12,17 @@ items = pam_mujoco.model_factory(model_name,
 ball = items["ball"]
 robot = items["robot"]
 
-
 mconfig = pam_mujoco.MujocoConfig()
-mconfig.graphics = config.graphics
+mconfig.graphics = True
 mconfig.realtime = True
 
 pam_mujoco.init_mujoco(mconfig)
 
-pam_mujoco.add_mirror_until_contact_free_joint(config.segment_id_ball,
-                                               ball.joint,
-                                               ball.index_qpos,ball.index_qvel,
-                                               config.segment_id_contact_robot)
-pam_mujoco.add_mirror_robot(config.segment_id_robot_mirror,robot.joint)
-
+pam_mujoco.add_o80_ball_control("ball",ball)
+pam_mujoco.add_o80_joint_control("robot",robot)
 
 # setting bursting mode !
-pam_mujoco.add_bursting(config.mujoco_id,config.segment_id_robot_mirror)
+pam_mujoco.add_bursting(mujoco_id,"robot")
 
 model_path = pam_mujoco.paths.get_model_path(model_name)
-pam_mujoco.execute(config.mujoco_id,model_path)
+pam_mujoco.execute(mujoco_id,model_path)
