@@ -2,9 +2,16 @@ import math
 import time
 import o80
 import o80_pam
+import pam_mujoco
 
-# connecting to the shared memory of the robot's controller
-frontend = o80_pam.FrontEnd("o80_pam_robot")
+# creating the mujoco's configuration, and getting the handle
+robot = pam_mujoco.MujocoRobot("robot",
+                               control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
+handle = pam_mujoco.MujocoHandle("o80_pam_robot",
+                                 robot1=robot)
+
+# getting the frontend connected to the robot's pressure controller 
+frontend = handle.frontends["robot"]
 
 pressure = 20000
 duration = 5 # seconds
@@ -36,9 +43,7 @@ frontend.add_command([pressure]*4,[pressure]*4,
 
 
 # sending both commands to the robot, and waiting for their completions.
-print("sending commands to shared memory and waiting for completion ...")
 frontend.pulse_and_wait()
-print("... completed !")
 
 
 ###

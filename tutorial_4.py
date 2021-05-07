@@ -1,5 +1,6 @@
 import math
 import time
+import context
 import o80
 import o80_pam
 import pam_mujoco
@@ -12,16 +13,21 @@ ball1 = pam_mujoco.MujocoItem("ball1",
                               color=(1,0,0,1))
 ball2 = pam_mujoco.MujocoItem("ball2",
                               control=pam_mujoco.MujocoItem.CONSTANT_CONTROL,
-                              color=(0,0,1,1))
+                              color=(0,0,1,1),
+                              contact_type=pam_mujoco.ContactTypes.table)
+hit_point = pam_mujoco.MujocoItem("hit_point",
+                                  control=pam_mujoco.MujocoItem.CONSTANT_CONTROL)
 handle = pam_mujoco.MujocoHandle("o80_pam_robot",
+                                 table=True,
                                  robot1=robot,
-                                 balls=(ball1,ball2))
+                                 balls=(ball1,ball2),
+                                 hit_points=(hit_point,))
 
 # getting the frontend connected to the robot's pressure controller 
 robot = handle.frontends["robot"]
 ball1 = handle.frontends["ball1"]
 ball2 = handle.frontends["ball2"]
-hit_point = hand.frontends["hit_point"]
+hit_point = handle.frontends["hit_point"]
 
 # moving the balls and the robot to a target position
 
@@ -103,11 +109,11 @@ contact = None
 while time.time()-time_start < 5:
 
     # monitoring contact
-    contact = pam_mujoco.get_contact("table") 
+    contact = handle.get_contact("ball2")
     if contact.contact_occured:
         break
 
-    # having the goal following the ball
+    # having the hit point following the ball
     position = ball2.latest().get_position()
     hit_point.add_command(position,[0,0,0],o80.Mode.OVERWRITE)
     hit_point.pulse()

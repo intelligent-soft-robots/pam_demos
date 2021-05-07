@@ -1,9 +1,16 @@
 import time
 import o80
 import o80_pam
+import pam_mujoco
 
-frontend = o80_pam.FrontEnd("o80_pam_robot")
+# creating the mujoco's configuration, and getting the handle
+robot = pam_mujoco.MujocoRobot("robot",
+                               control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
+handle = pam_mujoco.MujocoHandle("o80_pam_robot",
+                                 robot1=robot)
 
+# getting the frontend connected to the robot's pressure controller 
+frontend = handle.frontends["robot"]
 
 start_iteration = frontend.latest().get_iteration()
 
