@@ -5,8 +5,21 @@ import o80_pam
 import pam_mujoco
 import context
 
-ball = o80_pam.BallFrontEnd("ball")
-robot = o80_pam.JointFrontEnd("robot")
+
+# creating the mujoco's configuration, and getting the handle
+robot = pam_mujoco.MujocoRobot("robot",
+                               control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+ball = pam_mujoco.MujocoItem("ball",
+                             control=pam_mujoco.MujocoItem.CONSTANT_CONTROL)
+handle = pam_mujoco.MujocoHandle("o80_pam_robot",
+                                 burst_mode=True,
+                                 accelerated_time=True,
+                                 robot1=robot,
+                                 balls=(ball,))
+
+
+ball = handle.frontends["ball"]
+robot = handle.frontends["robot"]
 
 
 # target position of ball
@@ -34,5 +47,9 @@ nb_steps = int(nb_iterations/per_step)
 
 for _ in range(nb_steps):
     print("step !")
-    robot.burst(per_step)
+    handle.burst(per_step)
     time.sleep(2)
+
+time.sleep(4)
+print("mujoco exit !")
+handle.mujoco_exit()
