@@ -1,32 +1,37 @@
-import math
-import time
+import math,time
 import o80
-import o80_pam
-import pam_mujoco
-import context
+from handle_contacts import MUJOCO_ID,ROBOT_SEGMENT_ID,BALL_SEGMENT_ID
+from handle_contacts import get_robot_contact_handle
 
-ball = o80_pam.BallFrontEnd("ball")
-robot = o80_pam.JointFrontEnd("robot")
 
-pam_mujoco.reset_contact("robot_contact")
+handle = get_robot_contact_handle()
+
+ball = handle.frontends[BALL_SEGMENT_ID]
+robot = handle.frontends[ROBOT_SEGMENT_ID]
+
+handle.reset_contact(BALL_SEGMENT_ID)
+
 
 def _velocity(p1,p2,duration):
     return [(a-b)/duration for a,b in zip(p2,p1)]
 
+
 def _play_contact(joints,start,end,duration=1):
 
+    global handle,ball,robot
+    
     # deativating contacts
-    pam_mujoco.deactivate_contact("robot_contact")
+    handle.deactivate_contact(BALL_SEGMENT_ID)
 
     # going to start position
     ball.add_command(start,[0,0,0],o80.Duration_us.milliseconds(200),o80.Mode.QUEUE)
     ball.pulse_and_wait()
     
     # reativating contacts
-    pam_mujoco.activate_contact("robot_contact")
+    handle.activate_contact(BALL_SEGMENT_ID)
     
     # starting with clean contact
-    pam_mujoco.reset_contact("robot_contact")
+    handle.reset_contact(BALL_SEGMENT_ID)
 
     # set the robot to position
     robot.add_command(joints,(0,0,0,0),
@@ -42,8 +47,6 @@ def _play_contact(joints,start,end,duration=1):
     ball.add_command(end,_velocity(start,end,duration),
                      o80.Duration_us.seconds(duration),o80.Mode.QUEUE)
     ball.pulse_and_wait()
-
-
 
     
 # target position of robot

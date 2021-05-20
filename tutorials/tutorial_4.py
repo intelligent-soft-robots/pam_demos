@@ -5,7 +5,12 @@ import o80
 import o80_pam
 import pam_mujoco
 
-# creating the mujoco's configuration, and getting the handle
+# to run this tutorial, start pam_mujoco with mujoco_id "tutorial_4"
+
+# creating the mujoco's configuration, and getting the handle.
+# contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
+# position and velocity).
+# also other items (balls, hit point) are added and controlled.
 robot = pam_mujoco.MujocoRobot("robot",
                                control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 ball1 = pam_mujoco.MujocoItem("ball1",
@@ -17,11 +22,15 @@ ball2 = pam_mujoco.MujocoItem("ball2",
                               contact_type=pam_mujoco.ContactTypes.table)
 hit_point = pam_mujoco.MujocoItem("hit_point",
                                   control=pam_mujoco.MujocoItem.CONSTANT_CONTROL)
-handle = pam_mujoco.MujocoHandle("o80_pam_robot",
+graphics=True
+accelerated_time=False
+handle = pam_mujoco.MujocoHandle("tutorial_4",
                                  table=True,
                                  robot1=robot,
                                  balls=(ball1,ball2),
-                                 hit_points=(hit_point,))
+                                 hit_points=(hit_point,),
+                                 graphics=graphics,
+                                 accelerated_time=accelerated_time)
 
 # getting the frontend connected to the robot's pressure controller 
 robot = handle.frontends["robot"]

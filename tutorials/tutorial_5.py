@@ -3,10 +3,14 @@ import o80
 import o80_pam
 import pam_mujoco
 
+# to run this tutorial, start pam_mujoco with mujoco_id "tutorial_5"
+
 robot = pam_mujoco.MujocoRobot("robot",
                                control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
-handle = pam_mujoco.MujocoHandle("o80_pam_robot",
-                                 robot1=robot)
+graphics=False
+handle = pam_mujoco.MujocoHandle("tutorial_5",
+                                 robot1=robot,
+                                 graphics=graphics)
 
 
 fm = o80_pam.FileManager()

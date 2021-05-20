@@ -1,20 +1,20 @@
-import math
-import time
+import math,time
 import o80
-import o80_pam
-import pam_mujoco
+from handle_tutorial_1_to_3 import get_handle
 
-# creating the mujoco's configuration, and getting the handle
-robot = pam_mujoco.MujocoRobot("robot",
-                               control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
-handle = pam_mujoco.MujocoHandle("o80_pam_robot",
-                                 robot1=robot)
+# how to run:
+# first call in another terminal "pam_mujoco o80_pam_robot"
+# then start this file (python3 ./tutoral1.py)
 
-# getting the frontend connected to the robot's pressure controller 
+# configuring pam_mujoco to implement a pressure controlled robot
+handle = get_handle()
+
+# getting the frontend connected to the robot's pressure controller
+# Note: "robot" is the frontend segment id of the robot, see handle_tutorial_1_to_3.py
 frontend = handle.frontends["robot"]
 
 pressure = 20000
-duration = 5 # seconds
+duration = 1 # seconds
 # creating a command locally. The command is *not* sent to the robot yet.
 frontend.add_command([pressure]*4,[pressure]*4,
                      o80.Duration_us.seconds(duration),
@@ -30,7 +30,7 @@ frontend.pulse_and_wait()
 
 # adding a first command 
 pressure = 12000
-duration = 3 # seconds
+duration = 1 # seconds
 frontend.add_command([pressure]*4,[pressure]*4,
                      o80.Duration_us.seconds(duration),
                      o80.Mode.QUEUE)
@@ -52,7 +52,7 @@ frontend.pulse_and_wait()
 
 
 pressure = 15000
-duration=10
+duration=2
 frontend.add_command([pressure]*4,[pressure]*4,
                      o80.Duration_us.seconds(duration),
                      o80.Mode.QUEUE)
@@ -97,7 +97,7 @@ frontend.pulse()
 
 
 pressure = 12000
-duration = 10
+duration = 2
 frontend.add_command([pressure]*4,[pressure]*4,
                      o80.Duration_us.seconds(duration),
                      o80.Mode.QUEUE)
@@ -157,11 +157,11 @@ frontend.pulse()
 
 agonists = [15000,16000,17000,18000]
 antagonists = [18000,17000,16000,15000]
-frontend.add_command(dof,20000,15000,o80.Speed.per_second(300),o80.Mode.OVERWRITE)
+frontend.add_command(dof,20000,15000,o80.Speed.per_second(300*3),o80.Mode.OVERWRITE)
 dof=0
-frontend.add_command(dof,20000,15000,o80.Speed.per_second(200),o80.Mode.QUEUE)
-frontend.add_command(3,15000,o80.Speed.per_second(400),o80.Mode.OVERWRITE)
-frontend.add_command(4,20000,o80.Speed.per_second(300),o80.Mode.OVERWRITE)
+frontend.add_command(dof,20000,15000,o80.Speed.per_second(200*3),o80.Mode.QUEUE)
+frontend.add_command(3,15000,o80.Speed.per_second(400*3),o80.Mode.OVERWRITE)
+frontend.add_command(4,20000,o80.Speed.per_second(300*3),o80.Mode.OVERWRITE)
 frontend.pulse()
 
 ###

@@ -4,7 +4,7 @@ These are demos of the o80 API used to control the PAM robot developed at the Ma
 
 See the documentation here:
 
-https://github.com/intelligent-soft-robots/intelligent-soft-robots.github.io/wiki/
+http://people.tuebingen.mpg.de/mpi-is-software/pam/docs/pam_documentation/index.html
 
 # Credits
 

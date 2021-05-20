@@ -1,13 +1,9 @@
-import time
+import math,time
 import o80
-import o80_pam
-import pam_mujoco
+from handle_tutorial_1_to_3 import get_handle
 
-# creating the mujoco's configuration, and getting the handle
-robot = pam_mujoco.MujocoRobot("robot",
-                               control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
-handle = pam_mujoco.MujocoHandle("o80_pam_robot",
-                                 robot1=robot)
+# configuring pam_mujoco to implement a pressure controlled robot
+handle = get_handle()
 
 # getting the frontend connected to the robot's pressure controller 
 frontend = handle.frontends["robot"]
