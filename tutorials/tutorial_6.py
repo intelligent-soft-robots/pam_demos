@@ -1,12 +1,17 @@
 import time
-import math
 import o80
-import o80_pam
+import pam_mujoco
+
+# to run this tutorial, start pam_mujoco with mujoco_id "tutorial_6"
+
+robot = pam_mujoco.MujocoRobot("robot",
+                               control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
+handle = pam_mujoco.MujocoHandle("tutorial_6",
+                                 robot1=robot,
+                                 burst_mode=True)
 
 
-# default id when starting pam_robot executable
-segment_id = "o80_pam_robot"
-frontend = o80_pam.FrontEnd(segment_id)
+frontend = handle.frontends["robot"]
 
 
 # starting at low pressure
@@ -14,7 +19,11 @@ start_iteration = frontend.latest().get_iteration()
 frontend.add_command([12000]*4,[12000]*4,
                      o80.Iteration(start_iteration+1000),
                      o80.Mode.OVERWRITE)
-frontend.burst(2000)
+# sharing the command
+frontend.pulse()
+
+# requesting mujoco to perform 200 iterations
+handle.burst(2000)
 
 
 start_iteration = frontend.latest().get_iteration()
@@ -41,7 +50,7 @@ total_played = 0
 jump = 500
 while total_played<total_to_play:
     print("\nJump ...")
-    frontend.burst(jump)
+    handle.burst(jump)
     total_played+=jump
     print("...wait")
     time.sleep(1.0)

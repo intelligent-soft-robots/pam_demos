@@ -1,11 +1,12 @@
-import time
+import math,time
 import o80
-import o80_pam
+from handle_tutorial_1_to_3 import get_handle
 
+# configuring pam_mujoco to implement a pressure controlled robot
+handle = get_handle()
 
-segment_id = "o80_pam_robot"
-
-frontend = o80_pam.FrontEnd(segment_id)
+# getting the frontend connected to the robot's pressure controller 
+frontend = handle.frontends["robot"]
 
 
 def _print_title(title):
