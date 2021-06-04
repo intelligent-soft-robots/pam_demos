@@ -27,7 +27,7 @@ def get_handle():
 
     # will run in "natural" time
     # You can set it to True and see how the tutorials script behave.
-    accelerated_time=False
+    accelerated_time=True
 
     # creating the robot, specifying pressure control
     robot = pam_mujoco.MujocoRobot(robot_segment_id,
