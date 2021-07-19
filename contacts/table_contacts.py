@@ -2,6 +2,7 @@ import math,time
 import o80
 from handle_contacts import MUJOCO_ID,ROBOT_SEGMENT_ID,BALL_SEGMENT_ID
 from handle_contacts import get_table_contact_handle
+import matplotlib.pyplot as plt
 
 
 handle = get_table_contact_handle()
@@ -36,8 +37,28 @@ def _dropping(start,end,duration):
 
 starts = [(1.0,1.5,0.5),(1.5,1.5,0.5),(0.5,1.5,0.5),(1.1,0.5,0.5),(0.0,0.3,0.5)]
 
+
+frontend = handle.frontends[BALL_SEGMENT_ID]
+start_iteration = frontend.latest().get_iteration()
     
 for start in starts:
     duration = 1
     end = (1.1,0.5,-1.0)
     _dropping(start,end,duration)
+
+# letting the simulation playing a bit
+time.sleep(3)
+    
+# getting all ball observations
+obs = frontend.get_observations_since(start_iteration)
+# getting all z values
+z = [o.get_position()[2] for o in obs]
+# adding table z
+table = [-0.475 for o in obs]
+# plotting
+plt.plot(z)
+plt.plot(table)
+plt.show()
+
+
+
