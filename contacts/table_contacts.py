@@ -7,8 +7,6 @@ from handle_contacts import get_table_contact_handle
 handle = get_table_contact_handle()
 ball = handle.frontends[BALL_SEGMENT_ID]
 
-
-
 def _distance(p1,p2):
     return math.sqrt([(a-b)**2 for a,b in zip(p1,p2)])
 

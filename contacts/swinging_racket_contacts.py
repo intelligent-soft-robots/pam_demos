@@ -43,17 +43,18 @@ def _play_contact(joints_start,joints_end,duration_racket,
     
     ball.pulse()
     robot.pulse()
-    
-    time.sleep(max(duration_racket*1e-3,duration_ball*1e-3))
+
+    # sleep time of motion + 1 seconds
+    handle.sleep(max(duration_racket*1e-3,duration_ball*1e-3)+1,BALL_SEGMENT_ID)
 
 
+ball_starts = [(+1.10,+1.50,+0.05),(+1.50,+1.50,+0.05),(+0.80,+1.50,+0.05)]
+ball_ends =   [(+1.15,-1.00,+0.00),(+1.00,-1.00,+0.00),(+1.45,-1.00,+0.00)]
 
-for _ in range(10):
-    joints_start = (-math.pi/4.0,+math.pi/4.0,
-                    -math.pi/8.0,+math.pi/4.0)
-    joints_end = (+math.pi/4.0,+math.pi/4.0,
-                    -math.pi/8.0,+math.pi/4.0)
-    ball_start = (0.9,1.5,0.25)
-    ball_end = (0.95,-1.0,0.2)
+for ball_start,ball_end in zip(ball_starts,ball_ends):
+    joints_start = (-math.pi/3.0,+math.pi/2.5,
+                    -math.pi/8.0,0.1)
+    joints_end = (+math.pi/3.0,+math.pi/2.5,
+                    -math.pi/8.0,0.1)
     _play_contact(joints_start,joints_end,500,
                   ball_start,ball_end,500)

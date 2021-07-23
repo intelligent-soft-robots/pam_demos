@@ -12,11 +12,11 @@ robot = handle.frontends[ROBOT_SEGMENT_ID]
 handle.reset_contact(BALL_SEGMENT_ID)
 
 
-def _velocity(p1,p2,duration):
-    return [(a-b)/duration for a,b in zip(p2,p1)]
+def _velocity(p1,p2,duration_ms):
+    return [(a-b)/(float(duration_ms)/1000.0) for a,b in zip(p2,p1)]
 
 
-def _play_contact(joints,start,end,duration=1):
+def _play_contact(joints,start,end,duration=1000):
 
     global handle,ball,robot
     
@@ -45,7 +45,7 @@ def _play_contact(joints,start,end,duration=1):
 
     # having the ball going to the end position
     ball.add_command(end,_velocity(start,end,duration),
-                     o80.Duration_us.seconds(duration),o80.Mode.QUEUE)
+                     o80.Duration_us.milliseconds(duration),o80.Mode.QUEUE)
     ball.pulse_and_wait()
 
     
@@ -54,16 +54,21 @@ joints = (-math.pi/4.0,+math.pi/4.0,
           -math.pi/4.0,+math.pi/4.0)
 start = (0.78,1.5,0.5)
 end = (0.78,-1.0,0.2)
-_play_contact(joints,start,end,1)
+_play_contact(joints,start,end,1000)
 end = (0.78,-1.0,0.15)
-_play_contact(joints,start,end,1)
+_play_contact(joints,start,end,1000)
 end = (0.82,-1.0,0.2)
-_play_contact(joints,start,end,1)
+_play_contact(joints,start,end,1000)
 start = (0.78,1.5,0.0)
 end = (0.78,-1.0,0.3)
-_play_contact(joints,start,end,1)
+_play_contact(joints,start,end,1000)
 end = (0.78,-1.0,0.35)
-_play_contact(joints,start,end,1)
+_play_contact(joints,start,end,1000)
 end = (0.82,-1.0,0.3)
-_play_contact(joints,start,end,1)
-
+_play_contact(joints,start,end,1000)
+start = (1.5,1.5,0.0)
+end = (0.3,-1.0,0.3)
+_play_contact(joints,start,end,1000)
+start = (-0.5,1.5,0.0)
+end = (1.5,-1.0,0.3)
+_play_contact(joints,start,end,1000)
