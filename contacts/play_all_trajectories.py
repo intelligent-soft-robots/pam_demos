@@ -7,6 +7,9 @@ from handle_contacts import get_robot_contact_handle
 # empty or none: play all trajectories
 FILTER=[4,35]
 
+# set to True for slow-motion
+SLOWMO=False
+
 def play_trajectory(handle,ball,trajectory,duration):
     # to be able to fly to the racket on
     # the way to the init position
@@ -24,9 +27,22 @@ def play_trajectory(handle,ball,trajectory,duration):
     for point in trajectory[1:]:
         ball.add_command(point.position,
                          point.velocity,
-                         duration,o80.Mode.QUEUE)
+                         o80.Duration_us.milliseconds(duration),
+                         o80.Mode.QUEUE)
+
     # playing commands
-    ball.pulse_and_wait()
+    if SLOWMO:
+        ball.pulse()
+        total_time = len(trajectory)*duration*0.001
+        sleep=0.01
+        nb_iter = int( (total_time/sleep) + 0.5)
+        for iter in range(nb_iter):
+            time.sleep(sleep)
+            handle.pause(True)
+            time.sleep(0.1)
+            handle.pause(False)
+    else:
+        ball.pulse_and_wait()    
     
 handle = get_robot_contact_handle()
 ball = handle.frontends[BALL_SEGMENT_ID]
@@ -42,10 +58,10 @@ robot.pulse_and_wait()
 trajectories_generator = context.BallTrajectories()
 trajectories = trajectories_generator.get_all_trajectories()
 sampling_rate_ms = trajectories_generator.get_sampling_rate_ms()
-duration = o80.Duration_us.milliseconds(int(sampling_rate_ms))
+duration_ms = int(sampling_rate_ms)
 
 for index,trajectory in enumerate(trajectories):
     if ( (not FILTER ) or (index in FILTER) ):
         print("playing: ",index," | ",trajectories_generator.get_file_name(index))
-        play_trajectory(handle,ball,trajectory,duration)
+        play_trajectory(handle,ball,trajectory,duration_ms)
     
