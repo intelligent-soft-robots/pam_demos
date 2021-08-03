@@ -17,15 +17,18 @@ nb_balls = 20
 
 # creating ball items
 balls = pam_mujoco.MujocoItems("extra_balls")
+# the segment ids of the balls
+ball_segment_ids=["ball_"+str(index) for index in range(nb_balls)]
 # adding balls one by one
-for index in range(nb_balls):
+for index,segment_id in enumerate(ball_segment_ids):
     ball = pam_mujoco.MujocoItem(
-        "ball_" + str(index),
+        segment_id,
         control=pam_mujoco.MujocoItem.CONSTANT_CONTROL,
         contact_type=pam_mujoco.ContactTypes.table,
     )
     balls.add_ball(ball)
 
+    
 graphics = True
 accelerated_time = False
 
@@ -40,6 +43,12 @@ handle = pam_mujoco.MujocoHandle(
 # frontend to the ball items (same segment_id:"extra_balls")
 frontend = handle.frontends["extra_balls"]
 
+# disabling contact between the balls and the table,
+# so that the balls do not collide while going to
+# initial position
+for segment_id in ball_segment_ids:
+    handle.deactivate_contact(segment_id)
+
 # each instance of Item3dState
 # encapsulates the position and velocity
 # of a ball as state/desired state
@@ -48,6 +57,7 @@ item3d.set_velocity([0] * 3)
 step = 0.0
 duration = o80.Duration_us.milliseconds(500)
 
+# having the balls performing a little dance
 for index_ball in range(nb_balls):
     item3d.set_position([step, step, 0])
     frontend.add_command(index_ball, item3d, duration, o80.Mode.QUEUE)
@@ -64,6 +74,12 @@ trajectories_generator = context.BallTrajectories()
 sampling_rate_ms = trajectories_generator.get_sampling_rate_ms()
 duration = o80.Duration_us.milliseconds(int(sampling_rate_ms))
 
+# enabling balls/table contact
+for segment_id in ball_segment_ids:
+    handle.reset_contact(segment_id)
+    handle.activate_contact(segment_id)
+
+# balls playing pre-recorded trajectories 
 for index_ball in range(nb_balls):
     _, trajectory = trajectories_generator.random_trajectory()
     item3d.set_position(trajectory[0].position)
