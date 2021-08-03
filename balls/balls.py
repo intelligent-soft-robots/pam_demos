@@ -15,9 +15,9 @@ nb_balls = 20
 #nb_balls = 50
 #nb_balls = 100
 
-
+# creating ball items
 balls = pam_mujoco.MujocoItems("extra_balls")
-
+# adding balls one by one
 for index in range(nb_balls):
     ball = pam_mujoco.MujocoItem("ball_"+str(index),
                                  control=pam_mujoco.MujocoItem.CONSTANT_CONTROL,
@@ -33,8 +33,12 @@ handle = pam_mujoco.MujocoHandle(mujoco_id,
                                  graphics=graphics,
                                  accelerated_time=accelerated_time)
 
+# frontend to the ball items (same segment_id:"extra_balls")
 frontend = handle.frontends["extra_balls"]
 
+# each instance of Item3dState
+# encapsulates the position and velocity
+# of a ball as state/desired state
 item3d = o80.Item3dState()
 item3d.set_velocity([0]*3)
 step = 0.0
@@ -50,6 +54,8 @@ for index_ball in range(nb_balls):
     step-=0.1
 frontend.pulse_and_wait()
 
+# trajectories_generator encapsulate recorded ball
+# trajectories
 trajectories_generator = context.BallTrajectories()
 sampling_rate_ms = trajectories_generator.get_sampling_rate_ms()
 duration = o80.Duration_us.milliseconds(int(sampling_rate_ms))
