@@ -2,80 +2,33 @@ import math
 import time
 import context
 import o80
-import o80_pam
 import pam_mujoco
 import vicon_transformer
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 # to run this demo, start pam_mujoco with mujoco_id "vicon_robot_init"
+# pam_mujoco vicon_robot_init && python3 <pathToCode>/pam_demos/vicon_mujoco_init/robot_init.py
 
 # read a test vicon frame from file
 print('read a test vicon frame from file')
 vj = vicon_transformer.ViconJson()
 print(vj.j['subjectNames'])
+vj.zmq_disconnect()
 
 ### translations
-
 # robot
-r_pos=vj.get_robot_base_trans()
-# add translation from vicon frame to shoulder frame
-tr_to_shoulder = np.asarray([.25,.075,0])
-r_pos_shoulder = r_pos+tr_to_shoulder
-print('robot position from vicon')
-print(r_pos_shoulder)
+r_pos_shoulder = vj.get_robot_shoulder_pos()
 
 # table
-t_pos_1=vj.get_table1_trans()
-t_pos_2=vj.get_table2_trans()
-t_pos_3=vj.get_table3_trans()
-t_pos_4=vj.get_table4_trans()
-t_x = (t_pos_1[0]+t_pos_2[0]+t_pos_3[0]+t_pos_4[0])/4
-t_y = (t_pos_1[1]+t_pos_2[1]+t_pos_3[1]+t_pos_4[1])/4
-t_z = (t_pos_1[2]+t_pos_2[2]+t_pos_3[2]+t_pos_4[2])/4
-print('table position from vicon ('+str(t_x)+' '+str(t_y)+' '+str(t_z)+')')
-t_pos = np.asarray([t_x,t_y,t_z])
+t_pos = vj.get_table_pos()
 
 ### rotations
-
-## robot
-# read from vicon json
-r_rot_mat = vj.get_robot_base_rot()
-print('robot rot mat'+str(r_rot_mat))
-# rotate robot base vicon frame to robot shoulder frame
-# 1) z axis 180 deg by flipping x & y
-r_tmp = r_rot_mat[1,:].copy()
-print('r_tmp 1'+str(r_tmp))
-r_rot_mat[1,:] = r_rot_mat[0,:].copy()
-print('robot rot mat X'+str(r_rot_mat))
-print('r_tmp 2'+str(r_tmp))
-r_rot_mat[0,:] = r_tmp.copy()
-print('robot rotshoulder mat'+str(r_rot_mat))
-# bring into xy_axes form
-r_rot_xy_ = np.concatenate((r_rot_mat[0,:].T,r_rot_mat[1,:].T),axis=0)
-r_rot_xy = np.squeeze(np.asarray(r_rot_xy_))
-print('r_rot_xy'+str(r_rot_xy))
-
+# robot
+r_rot_xy = vj.get_robot_rot()
 
 # table
-t_rot_mat = vj.get_table_rot1()
-t_rot_xy_ = np.concatenate((t_rot_mat[0,:].T,t_rot_mat[1,:].T),axis=0)
-t_rot_xy = np.squeeze(np.asarray(t_rot_xy_))
-print('table rot mat 1 '+str(t_rot_xy))
-# t_rot_mat = vj.get_table_rot2()
-# t_rot_xy_ = np.concatenate((t_rot_mat[0,:].T,t_rot_mat[1,:].T),axis=0)
-# t_rot_xy = np.squeeze(np.asarray(t_rot_xy_))
-# print('table rot mat 2 '+str(t_rot_xy))
-# t_rot_mat = vj.get_table_rot3()
-# t_rot_xy_ = np.concatenate((t_rot_mat[0,:].T,t_rot_mat[1,:].T),axis=0)
-# t_rot_xy = np.squeeze(np.asarray(t_rot_xy_))
-# print('table rot mat 3 '+str(t_rot_xy))
-# t_rot_mat = vj.get_table_rot4()
-# t_rot_xy_ = np.concatenate((t_rot_mat[0,:].T,t_rot_mat[1,:].T),axis=0)
-# t_rot_xy = np.squeeze(np.asarray(t_rot_xy_))
-# print('table rot mat 4 '+str(t_rot_xy))
-
-
+t_rot_xy = vj.get_table_rot()
 
 # creating the mujoco's configuration, and getting the handle.
 # contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
