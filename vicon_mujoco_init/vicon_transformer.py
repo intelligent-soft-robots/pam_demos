@@ -32,21 +32,21 @@ class ViconJson:
         self.zmq_connect(self.ip,self.port,self.timeout_in_ms)
         # read frame from file when connection cannot be established
         if self.zmq_connected:
-            self.j = self.read_vicon_json_from_zmq()
+            self.jsonObj = self.read_vicon_json_from_zmq()
             print('Vicon connected via zmq')
         else:
-            self.j = self.read_vicon_json_from_file(fname)
+            self.jsonObj = self.read_vicon_json_from_file(fname)
             print('Vicon initialised via test frame from file')
     
     # connecting and reading frames
 
     def read_vicon_json_from_zmq(self):
-        if self.zmq_connected is False:
+        if not self.zmq_connected:
             print('read_vicon_json_from_zmq: connect before reading')
             return []
         else: # read 
-            self.j = self.sub.recv_json()
-            return self.j
+            self.jsonObj = self.sub.recv_json()
+            return self.jsonObj
         
     def zmq_connect(self,ip,port,timeout):
         print('zmq_connect: connecting...')
@@ -63,15 +63,15 @@ class ViconJson:
             # test read frame until frame available or timeout
             n=0
             while n<10 or not self.zmq_connected:
-                self.j = self.sub.recv_json()
-                if self.j is not []:
+                self.jsonObj = self.sub.recv_json()
+                if self.jsonObj != []:
                     self.zmq_connected = True
                 n=n+1
-            if n<10:
+            if self.zmq_connected:
+                print('zmq_connect(): connected')
+            else:
                 print('zmq_connect(): could not read a frame')
                 self.zmq_disconnect()
-            else:
-                print('zmq_connect(): connected')
         except Exception as e:
             print('zmq_connect(): could not connect')
             return
@@ -88,17 +88,36 @@ class ViconJson:
         else:
             print('zmq_disconnect: already disconnected. Bye...')
 
-    def read_vicon_json_from_file(self,fname):
+    def read_vicon_json_from_file(self,rel_fname):
         script_dir = os.path.dirname(__file__)
-        with open(os.path.join(script_dir, fname)) as json_file:
+        with open(os.path.join(script_dir, rel_fname)) as json_file:
             r = json.load(json_file)
         return r
+
+    # measure distances
+
+    def get_distances(self):
+        print('table lengths')
+        t_pos_1=self.get_table1_trans()
+        t_pos_2=self.get_table2_trans()
+        t_pos_3=self.get_table3_trans()
+        t_pos_4=self.get_table4_trans()
+        print('1->4 ',np.linalg.norm(t_pos_1-t_pos_4))
+        print('2->3 ',np.linalg.norm(t_pos_2-t_pos_3))
+        print('1->2 ',np.linalg.norm(t_pos_1-t_pos_2))
+        print('4->3 ',np.linalg.norm(t_pos_4-t_pos_3))
+
+        print('distance origin -> robot vicon marker')
+        t_rob_origin = self.get_rel_transl('rll_ping_base','rll_muscle_base')
+        print(t_rob_origin)
+
 
     # get object rotations and translations
 
     def get_table_rot(self):
         t_rot_mat = self.get_table_rot1()
         t_rot_xy_ = np.concatenate((t_rot_mat[0,:].T,t_rot_mat[1,:].T),axis=0)
+        print('table rot ',t_rot_mat)
         return np.squeeze(np.asarray(t_rot_xy_))
 
     def get_robot_rot(self):
@@ -108,13 +127,16 @@ class ViconJson:
         r_tmp = r_rot_mat[1,:].copy()
         r_rot_mat[1,:] = r_rot_mat[0,:].copy()
         r_rot_mat[0,:] = r_tmp.copy()
+        # rotate by 90 deg around z
+        rot_90z = np.asarray([[0,-1,0],[1,0,0],[0,0,1]])
+        r_rot_mat = r_rot_mat @ rot_90z
         # bring into xy_axes form
         r_rot_xy_ = np.concatenate((r_rot_mat[0,:].T,r_rot_mat[1,:].T),axis=0)
         return np.squeeze(np.asarray(r_rot_xy_))
 
     def get_robot_shoulder_pos(self):
         r_pos=self.get_robot_base_trans()
-        tr_to_shoulder = np.asarray([.25,.075,0])
+        tr_to_shoulder = np.asarray([-.255,.0785,0]) # measured on real robot
         return r_pos+tr_to_shoulder
 
     def get_table_pos(self):
@@ -122,10 +144,8 @@ class ViconJson:
         t_pos_2=self.get_table2_trans()
         t_pos_3=self.get_table3_trans()
         t_pos_4=self.get_table4_trans()
-        t_x = (t_pos_1[0]+t_pos_2[0]+t_pos_3[0]+t_pos_4[0])/4
-        t_y = (t_pos_1[1]+t_pos_2[1]+t_pos_3[1]+t_pos_4[1])/4
-        t_z = (t_pos_1[2]+t_pos_2[2]+t_pos_3[2]+t_pos_4[2])/4
-        return np.asarray([t_x,t_y,t_z])
+        t = (t_pos_1+t_pos_2+t_pos_3+t_pos_4)/4
+        return t
 
     # translations
 
@@ -151,7 +171,7 @@ class ViconJson:
     def get_rel_rot_mat(self,key_origin,key_target):
         R_mat_origin = self.get_rot_mat(key_origin)
         R_mat_target = self.get_rot_mat(key_target)
-        return np.asmatrix(R_mat_target).T*np.asmatrix(R_mat_origin)
+        return np.asarray(R_mat_target).T @ np.asarray(R_mat_origin)
 
     def get_robot_base_rot(self):
         return self.get_rel_rot_mat('rll_ping_base','rll_muscle_base')
@@ -168,21 +188,21 @@ class ViconJson:
     # access json methods
 
     def get_transl(self,key):
-        idx = self.j['subjectNames'].index(key)
-        tr =  self.j['subject_'+str(idx)]['global_translation'][0]
+        idx = self.jsonObj['subjectNames'].index(key)
+        tr =  self.jsonObj['subject_'+str(idx)]['global_translation'][0]
         return tr
 
     def get_rot_mat(self,key):
-        idx = self.j['subjectNames'].index(key)
-        r =  self.j['subject_'+str(idx)]['global_rotation']["matrix"][0]
+        idx = self.jsonObj['subjectNames'].index(key)
+        r =  self.jsonObj['subject_'+str(idx)]['global_rotation']["matrix"][0]
         return r
 
     def get_rot_eulerxyz(self,key):
-        idx = self.j['subjectNames'].index(key)
-        r =  self.j['subject_'+str(idx)]['global_rotation']["eulerxyz"][0]
+        idx = self.jsonObj['subjectNames'].index(key)
+        r =  self.jsonObj['subject_'+str(idx)]['global_rotation']["eulerxyz"][0]
         return r
 
     def get_rot_quat(self,key):
-        idx = self.j['subjectNames'].index(key)
-        r =  self.j['subject_'+str(idx)]['global_rotation']["quaternion"][0]
+        idx = self.jsonObj['subjectNames'].index(key)
+        r =  self.jsonObj['subject_'+str(idx)]['global_rotation']["quaternion"][0]
         return r    
