@@ -10,6 +10,7 @@ from typing import Sequence,Tuple
 import random
 import time
 import math
+import o80
 import pam_interface
 import o80_pam
 import pam_mujoco
@@ -18,14 +19,14 @@ from lightargs import BrightArgs,FileExists
 
 ROBOT_SEGMENT_ID = "robot"
 MUJOCO_ID = "position_control"
-KP = [0.02,0.03,0.01,0.03]
-KI = [0.00075,0.0002,0.00125,0.0005]
-KD = [0.000,0.001,0.000,0.000]
-NDP = [.5,1.,.5,.4]
+KP = [0.007,0.4,3.0,0.8]
+KI=[0.002,0.0001,0.0,0.005]
+KD = [0.007,0.01,0.00,0.004]
+NDP = [0.1,-0.3,0.05,0.2]
 TIME_STEP = 0.01 # seconds
-QD_DESIRED = [0.43,0.174,0.349,0.349] # radian per seconds
+QD_DESIRED = [0.7,0.7,0.7,0.7] # radian per seconds
 PI4 = math.pi/4.
-Q_TARGET = [PI4]*4
+Q_TARGET = [-PI4,PI4,-PI4,0]
 
 
 def _get_handle() -> pam_mujoco.MujocoHandle :
@@ -80,7 +81,7 @@ def _go_to(
     while controller.has_next():
         _,_,q,qd = interface.read()
         pressures = controller.next(q,qd)
-        interface.set(pressures,duration=o80.Duration_us.milliseconds(int(TIME_STEP*1e3)),wait=True)
+        interface.set(pressures,duration_ms=int(TIME_STEP*1e3),wait=True)
     
 
 def _random_posture(interface: o80_pam.o80Pressures,
@@ -89,7 +90,6 @@ def _random_posture(interface: o80_pam.o80Pressures,
     set the robot to a random posture
     """
 
-    
     posture = [ (random.randrange(min_pressure,max_pressure),
                  random.randrange(min_pressure,max_pressure)) for dof in range(4) ]
     interface.set(posture,duration_ms=2000,wait=True)
@@ -112,6 +112,8 @@ def _run(segment_id: str, pam_config_file_path: str):
         print("going to target position")
         _go_to(pam_config,interface,Q_TARGET)
         time.sleep(2)
+        print("\t desired:", Q_TARGET )
+        print("\t reached:", interface.read()[2])
         
 
 def _config() -> BrightArgs :
