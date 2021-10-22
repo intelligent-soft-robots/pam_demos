@@ -17,7 +17,7 @@ import json
 class ViconJson:
     def __init__(
         self,
-        fname='testViconFrameTableRot.txt',#'testViconFrame.txt'
+        fname='testViconFrameTableRot.json',#'testViconFrame.txt'
         ip="10.42.2.29",
         port="5555",
         timeout_in_ms=5000
