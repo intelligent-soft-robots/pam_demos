@@ -127,7 +127,7 @@ def main():
     # loading and playing the trajectories
     duration_s = 0.01
     duration = o80.Duration_us.milliseconds(int(duration_s * 1000))
-    for traj in zip(trajectory):
+    for traj in iter(trajectory):
         #total_duration = duration_s * len(traj)
         for traj_point in traj:
             ball.add_command(
