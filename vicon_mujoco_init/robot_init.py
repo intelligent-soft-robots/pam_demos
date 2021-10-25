@@ -17,7 +17,7 @@ def main():
     # read a test vicon frame from file
     print('read a test vicon frame from file')
     vj = vicon_transformer.ViconJson()
-    print(vj.jsonObj['subjectNames'])
+    print(vj.json_obj['subjectNames'])
     vj.zmq_disconnect()
 
     # read distances of objects as sanity check

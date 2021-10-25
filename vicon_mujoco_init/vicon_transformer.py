@@ -32,10 +32,10 @@ class ViconJson:
         self.zmq_connect(self.ip,self.port,self.timeout_in_ms)
         # read frame from file when connection cannot be established
         if self.zmq_connected:
-            self.jsonObj = self.read_vicon_json_from_zmq()
+            self.json_obj = self.read_vicon_json_from_zmq()
             print('Vicon connected via zmq')
         else:
-            self.jsonObj = self.read_vicon_json_from_file(fname)
+            self.json_obj = self.read_vicon_json_from_file(self.get_config_dir()+'/'+fname)
             print('Vicon initialised via test frame from file')
     
     # connecting and reading frames
@@ -45,8 +45,8 @@ class ViconJson:
             print('read_vicon_json_from_zmq: connect before reading')
             return []
         else: # read 
-            self.jsonObj = self.sub.recv_json()
-            return self.jsonObj
+            self.json_obj = self.sub.recv_json()
+            return self.json_obj
         
     def zmq_connect(self,ip,port,timeout):
         print('zmq_connect: connecting...')
@@ -54,7 +54,7 @@ class ViconJson:
             self.context = zmq.Context()
             self.sub=self.context.socket(zmq.SUB)
             self.sub.setsockopt(zmq.SUBSCRIBE, b"")
-            self.sub.RCVTIMEO = self.timeout_in_ms # wait only 5s for new message 
+            self.sub.RCVTIMEO = self.timeout_in_ms # wait 5s for new message 
             msg  = 'tcp://'+str(self.ip)+':'+str(port)
             self.sub.connect(msg)  
             if self.sub.closed is True:
@@ -63,8 +63,8 @@ class ViconJson:
             # test read frame until frame available or timeout
             n=0
             while n<10 or not self.zmq_connected:
-                self.jsonObj = self.sub.recv_json()
-                if self.jsonObj != []:
+                self.json_obj = self.sub.recv_json()
+                if self.json_obj != []:
                     self.zmq_connected = True
                 n=n+1
             if self.zmq_connected:
@@ -88,15 +88,17 @@ class ViconJson:
         else:
             print('zmq_disconnect: already disconnected. Bye...')
 
-    def read_vicon_json_from_file(self,rel_fname):
-        script_dir = os.path.dirname(__file__)
-        with open(os.path.join(script_dir, rel_fname)) as json_file:
+    def read_vicon_json_from_file(self,fname):
+        with open(fname) as json_file:
             r = json.load(json_file)
         return r
 
+    def get_config_dir(self):
+        return os.path.dirname(__file__)
+
     # measure distances
 
-    def get_distances(self):
+    def print_distances(self):
         print('table lengths')
         t_pos_1=self.get_table1_trans()
         t_pos_2=self.get_table2_trans()
@@ -188,21 +190,21 @@ class ViconJson:
     # access json methods
 
     def get_transl(self,key):
-        idx = self.jsonObj['subjectNames'].index(key)
-        tr =  self.jsonObj['subject_'+str(idx)]['global_translation'][0]
+        idx = self.json_obj['subjectNames'].index(key)
+        tr =  self.json_obj['subject_'+str(idx)]['global_translation'][0]
         return tr
 
     def get_rot_mat(self,key):
-        idx = self.jsonObj['subjectNames'].index(key)
-        r =  self.jsonObj['subject_'+str(idx)]['global_rotation']["matrix"][0]
+        idx = self.json_obj['subjectNames'].index(key)
+        r =  self.json_obj['subject_'+str(idx)]['global_rotation']["matrix"][0]
         return r
 
     def get_rot_eulerxyz(self,key):
-        idx = self.jsonObj['subjectNames'].index(key)
-        r =  self.jsonObj['subject_'+str(idx)]['global_rotation']["eulerxyz"][0]
+        idx = self.json_obj['subjectNames'].index(key)
+        r =  self.json_obj['subject_'+str(idx)]['global_rotation']["eulerxyz"][0]
         return r
 
     def get_rot_quat(self,key):
-        idx = self.jsonObj['subjectNames'].index(key)
-        r =  self.jsonObj['subject_'+str(idx)]['global_rotation']["quaternion"][0]
+        idx = self.json_obj['subjectNames'].index(key)
+        r =  self.json_obj['subject_'+str(idx)]['global_rotation']["quaternion"][0]
         return r    
