@@ -4,8 +4,8 @@ import o80
 import context
 import pam_mujoco
 import vicon_transformer
-import numpy as np
-from scipy.spatial.transform import Rotation as R
+# import numpy as np
+# from scipy.spatial.transform import Rotation as R
 
 # to run this demo
 # 1) start pam_mujoco with mujoco_id "vicon_robot_init"

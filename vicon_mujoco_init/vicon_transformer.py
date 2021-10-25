@@ -5,7 +5,6 @@ import pytransform3d as tr
 import numpy as np
 from os.path import dirname, abspath, join
 import zmq
-import json
 
 # object names 
 # ['frame_number', 'frame_rate', 'latency', 'my_frame_number', 'num_subjects', 
