@@ -21,7 +21,7 @@ def main():
     vj.zmq_disconnect()
 
     # read distances of objects as sanity check
-    vj.get_distances()
+    vj.print_distances()
 
     ### translations
     # robot
@@ -129,7 +129,7 @@ def main():
     duration = o80.Duration_us.milliseconds(int(duration_s * 1000))
     for traj in iter(trajectory):
         #total_duration = duration_s * len(traj)
-        for traj_point in traj:
+        for traj_point in zip:
             ball.add_command(
                 traj_point.position, traj_point.velocity, duration, o80.Mode.QUEUE
             )
