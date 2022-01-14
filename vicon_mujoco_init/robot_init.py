@@ -4,6 +4,7 @@ import o80
 import context
 import pam_mujoco
 import vicon_transformer
+
 # import numpy as np
 # from scipy.spatial.transform import Rotation as R
 
@@ -13,11 +14,12 @@ import vicon_transformer
 # 3) start the zmq broadcaster on vicon PC in the lab (otherwise a test frame will be read only)
 # 4) execute 'pam_mujoco vicon_robot_init && python3 <pathToCode>/pam_demos/vicon_mujoco_init/robot_init.py'
 
+
 def main():
     # read a test vicon frame from file
-    print('read a test vicon frame from file')
+    print("read a test vicon frame from file")
     vj = vicon_transformer.ViconJson()
-    print(vj.json_obj['subjectNames'])
+    print(vj.json_obj["subjectNames"])
     vj.zmq_disconnect()
 
     # read distances of objects as sanity check
@@ -40,15 +42,19 @@ def main():
     # creating the mujoco's configuration, and getting the handle.
     # contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
     # position and velocity).
-    robot_default = pam_mujoco.MujocoRobot("robot_default", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
-    robot_vicon_init = pam_mujoco.MujocoRobot("robot_vicon_init", 
-                                            control=pam_mujoco.MujocoRobot.JOINT_CONTROL,
-                                            position=r_pos_shoulder,
-                                            orientation=r_rot_xy)
+    robot_default = pam_mujoco.MujocoRobot(
+        "robot_default", control=pam_mujoco.MujocoRobot.JOINT_CONTROL
+    )
+    robot_vicon_init = pam_mujoco.MujocoRobot(
+        "robot_vicon_init",
+        control=pam_mujoco.MujocoRobot.JOINT_CONTROL,
+        position=r_pos_shoulder,
+        orientation=r_rot_xy,
+    )
 
-    table = pam_mujoco.MujocoTable("table_vicon_init",
-                                    position = t_pos,
-                                    orientation = t_rot_xy)
+    table = pam_mujoco.MujocoTable(
+        "table_vicon_init", position=t_pos, orientation=t_rot_xy
+    )
     ball = pam_mujoco.MujocoItem(
         "ball", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL, color=(1, 0, 0, 1)
     )
@@ -61,7 +67,7 @@ def main():
     handle = pam_mujoco.MujocoHandle(
         "vicon_robot_init",
         table=table,
-        robot1=robot_default, 
+        robot1=robot_default,
         robot2=robot_vicon_init,
         balls=(ball,),
         hit_points=(hit_point,),
@@ -78,7 +84,6 @@ def main():
     # moving the balls and the robot to a target position
 
     print("starting state ball: {}".format(ball.latest()))
-
 
     # target position of balls
     position1 = (0.5, 3, 1)
@@ -100,9 +105,7 @@ def main():
 
     time.sleep(3)
 
-
     # reading pre-recorded trajectories
-
 
     index1, trajectory = list(context.BallTrajectories().random_trajectory())
 
@@ -111,7 +114,7 @@ def main():
             context.BallTrajectories().get_file_name(index1)
         )
     )
-    print('traj')
+    print("traj")
     print(trajectory[0].position)
 
     # moving ball 1 and ball 2 to first trajectories point
@@ -123,27 +126,23 @@ def main():
 
     time.sleep(1)
 
-
     # loading and playing the trajectories
     duration_s = 0.01
     duration = o80.Duration_us.milliseconds(int(duration_s * 1000))
     for traj in zip(trajectory):
-        #total_duration = duration_s * len(traj)
+        # total_duration = duration_s * len(traj)
         for traj_point in traj:
             ball.add_command(
                 traj_point.position, traj_point.velocity, duration, o80.Mode.QUEUE
             )
             ball.pulse()
 
-
     # monitoring for contact
     # note: contact will not happen at all the runs of this executable,
     # as the virtual table heights does not match exactly the height of the
     # real table used for the recording of the ball trajectory.
 
-
     time_start = time.time()
-
 
     while time.time() - time_start < 5:
 
@@ -152,10 +151,8 @@ def main():
         hit_point.add_command(position, [0, 0, 0], o80.Mode.OVERWRITE)
         hit_point.pulse()
 
-
-
-
     print()
+
 
 if __name__ == "__main__":
     main()

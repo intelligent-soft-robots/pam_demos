@@ -18,9 +18,9 @@ nb_balls = 20
 # creating ball items
 balls = pam_mujoco.MujocoItems("extra_balls")
 # the segment ids of the balls
-ball_segment_ids=["ball_"+str(index) for index in range(nb_balls)]
+ball_segment_ids = ["ball_" + str(index) for index in range(nb_balls)]
 # adding balls one by one
-for index,segment_id in enumerate(ball_segment_ids):
+for index, segment_id in enumerate(ball_segment_ids):
     ball = pam_mujoco.MujocoItem(
         segment_id,
         control=pam_mujoco.MujocoItem.CONSTANT_CONTROL,
@@ -28,7 +28,7 @@ for index,segment_id in enumerate(ball_segment_ids):
     )
     balls.add_ball(ball)
 
-    
+
 graphics = True
 accelerated_time = False
 
@@ -79,7 +79,7 @@ for segment_id in ball_segment_ids:
     handle.reset_contact(segment_id)
     handle.activate_contact(segment_id)
 
-# balls playing pre-recorded trajectories 
+# balls playing pre-recorded trajectories
 for index_ball in range(nb_balls):
     _, trajectory = trajectories_generator.random_trajectory()
     item3d.set_position(trajectory[0].position)
