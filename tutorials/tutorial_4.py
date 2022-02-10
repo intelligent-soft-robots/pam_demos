@@ -26,9 +26,14 @@ hit_point = pam_mujoco.MujocoItem(
 )
 graphics = True
 accelerated_time = False
+
+table_ = pam_mujoco.MujocoTable("table_tut_4",
+                                    position = [0,0,0],
+                                    orientation = [1,0,0,0,1,0])
+
 handle = pam_mujoco.MujocoHandle(
     "tutorial_4",
-    table=True,
+    table=table_,
     robot1=robot,
     balls=(ball1, ball2),
     hit_points=(hit_point,),

@@ -135,6 +135,12 @@ class ViconJson:
         r_rot_xy_ = np.concatenate((r_rot_mat[0,:].T,r_rot_mat[1,:].T),axis=0)
         return np.squeeze(np.asarray(r_rot_xy_))
 
+    def get_elbow_rot(self):
+        return self.get_rel_rot_mat('rll_ping_base','Marker_Arm')
+        
+    def get_racket_rot(self):
+        return self.get_rel_rot_mat('rll_ping_base','rll_muscle_racket')
+
     def get_robot_shoulder_pos(self):
         r_pos=self.get_robot_base_trans()
         tr_to_shoulder = np.asarray([-.255,.0785,0]) # measured on real robot
@@ -147,6 +153,11 @@ class ViconJson:
         t_pos_4=self.get_table4_trans()
         t = (t_pos_1+t_pos_2+t_pos_3+t_pos_4)/4
         return t
+
+    def get_elbow_pos(self):
+        return self.get_rel_transl('rll_ping_base','Marker_Arm')
+    def get_racket_pos(self):
+        return self.get_rel_transl('rll_ping_base','rll_muscle_racket')
 
     # translations
 
@@ -166,7 +177,7 @@ class ViconJson:
         return self.get_rel_transl('rll_ping_base','TT Platte_Eckteil 3')
     def get_table4_trans(self):
         return self.get_rel_transl('rll_ping_base','TT Platte_Eckteil 4')
-
+   
     # rotations
 
     def get_rel_rot_mat(self,key_origin,key_target):
@@ -185,6 +196,7 @@ class ViconJson:
         return self.get_rel_rot_mat('rll_ping_base','TT Platte_Eckteil 3')
     def get_table_rot4(self):
         return self.get_rel_rot_mat('rll_ping_base','TT Platte_Eckteil 4')
+    
 
     # access json methods
 

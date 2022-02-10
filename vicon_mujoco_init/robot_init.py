@@ -4,8 +4,7 @@ import o80
 import context
 import pam_mujoco
 import vicon_transformer
-# import numpy as np
-# from scipy.spatial.transform import Rotation as R
+import numpy as np
 
 # to run this demo
 # 1) start pam_mujoco with mujoco_id "vicon_robot_init"
@@ -22,7 +21,19 @@ def main():
 
     # read distances of objects as sanity check
     vj.print_distances()
-
+    
+    print('vj.get_transl(rll_ping_base)',vj.get_transl('rll_ping_base'))
+    print('vj.get_transl(rll_muscle_base)',vj.get_transl('rll_muscle_base'))
+    o = np.asarray(vj.get_transl('rll_ping_base'))
+    rb = np.asarray(vj.get_transl('rll_muscle_base'))
+    print('origing->robot base ',-rb+o)
+    print('----')
+    t1 = np.asarray(vj.get_transl('TT Platte_Eckteil 1'))
+    print('origing->table 1 ',-t1+o)
+    t2 = np.asarray(vj.get_transl('TT Platte_Eckteil 2'))
+    print('origing->table 2 ',-t2+o)
+    print('t1 -> t2',-t1+o - (-t2+o))
+    print('----')
     ### translations
     # robot
     r_pos_shoulder = vj.get_robot_shoulder_pos()
@@ -37,6 +48,11 @@ def main():
     # table
     t_rot_xy = vj.get_table_rot()
 
+
+    print('t_pos ',t_pos)
+    print('r_pos_shoulder ',r_pos_shoulder)
+    
+'''
     # creating the mujoco's configuration, and getting the handle.
     # contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
     # position and velocity).
@@ -68,6 +84,8 @@ def main():
         graphics=graphics,
         accelerated_time=accelerated_time,
     )
+
+    
 
     # getting the frontend connected to the robot's joint controller
     robot_default = handle.frontends["robot_default"]
@@ -156,6 +174,7 @@ def main():
 
 
     print()
+    '''
 
 if __name__ == "__main__":
     main()
