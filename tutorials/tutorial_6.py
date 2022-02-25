@@ -4,7 +4,7 @@ import pam_mujoco
 
 # to run this tutorial, start pam_mujoco with mujoco_id "tutorial_6"
 
-robot = pam_mujoco.MujocoRobot("robot", control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
+robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
 handle = pam_mujoco.MujocoHandle("tutorial_6", robot1=robot, burst_mode=True)
 
 

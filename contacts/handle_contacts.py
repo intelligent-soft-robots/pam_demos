@@ -10,7 +10,7 @@ def get_handle(robot_contact):
     global MUJOCO_ID, ROBOT_SEGMENT_ID, BALL_SEGMENT_ID
 
     robot_control = pam_mujoco.MujocoRobot.JOINT_CONTROL
-    robot = pam_mujoco.MujocoRobot(ROBOT_SEGMENT_ID, control=robot_control)
+    robot = pam_mujoco.MujocoRobot(False,ROBOT_SEGMENT_ID, control=robot_control)
 
     ball_control = pam_mujoco.MujocoItem.CONSTANT_CONTROL
     if robot_contact:

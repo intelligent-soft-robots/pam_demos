@@ -28,13 +28,28 @@ for index,segment_id in enumerate(ball_segment_ids):
     )
     balls.add_ball(ball)
 
-    
+table = pam_mujoco.MujocoTable(
+    "table",
+    position=(0.1, 0, -0.44),
+    orientation="-1 0 0 0 -1 0",
+)
+
+# configuring the robot
+robot = pam_mujoco.MujocoRobot(
+    False,
+    "robot",
+    position=(0.435, 0.1175, -0.0025),
+    orientation="-1 0 0 0 -1 0",
+    control=pam_mujoco.MujocoRobot.JOINT_CONTROL,
+)
+
 graphics = True
 accelerated_time = False
 
 handle = pam_mujoco.MujocoHandle(
     mujoco_id,
-    table=True,
+    table=table,
+    robot1=robot,
     combined=balls,
     graphics=graphics,
     accelerated_time=accelerated_time,

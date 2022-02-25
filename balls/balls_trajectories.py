@@ -15,7 +15,7 @@ nb_balls = 20
 # nb_balls = 50
 # nb_balls = 100
 
-robot = pam_mujoco.MujocoRobot("robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(False,"robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 balls = pam_mujoco.MujocoItems("balls")
 ball_segment_ids = ["ball_" + str(index) for index in range(nb_balls)]
 for index in range(nb_balls):

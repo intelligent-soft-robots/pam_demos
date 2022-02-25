@@ -40,8 +40,8 @@ def main():
     # creating the mujoco's configuration, and getting the handle.
     # contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
     # position and velocity).
-    robot_default = pam_mujoco.MujocoRobot("robot_default", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
-    robot_vicon_init = pam_mujoco.MujocoRobot("robot_vicon_init", 
+    robot_default = pam_mujoco.MujocoRobot(False, "robot_default", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+    robot_vicon_init = pam_mujoco.MujocoRobot(False,"robot_vicon_init", 
                                             control=pam_mujoco.MujocoRobot.JOINT_CONTROL,
                                             position=r_pos_shoulder,
                                             orientation=r_rot_xy)

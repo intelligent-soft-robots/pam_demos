@@ -8,7 +8,7 @@ robot_segment_id = "robot"
 control = pam_mujoco.MujocoRobot.PRESSURE_CONTROL
 graphics = True
 accelerated_time = False
-robot = pam_mujoco.MujocoRobot(robot_segment_id, control=control)
+robot = pam_mujoco.MujocoRobot(False,robot_segment_id, control=control)
 handle = pam_mujoco.MujocoHandle(
     mujoco_id, robot1=robot, graphics=graphics, accelerated_time=accelerated_time
 )

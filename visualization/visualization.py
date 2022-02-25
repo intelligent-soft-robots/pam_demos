@@ -12,7 +12,7 @@ import pam_mujoco
 
 
 # creating the mujoco's configuration, and getting the handle
-robot = pam_mujoco.MujocoRobot("robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 ball = pam_mujoco.MujocoItem(
     "ball",
     control=pam_mujoco.MujocoItem.CONSTANT_CONTROL,

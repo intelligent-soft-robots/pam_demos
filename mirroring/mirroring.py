@@ -21,7 +21,7 @@ def configure_pseudo_real(
         burst_mode = False
 
     robot = pam_mujoco.MujocoRobot(
-        SEGMENT_ID_PSEUDO_REAL_ROBOT, control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL
+        False, SEGMENT_ID_PSEUDO_REAL_ROBOT, control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL
     )
     handle = pam_mujoco.MujocoHandle(
         mujoco_id,

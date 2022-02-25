@@ -11,7 +11,7 @@ import pam_mujoco
 # contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
 # position and velocity).
 # also other items (balls, hit point) are added and controlled.
-robot = pam_mujoco.MujocoRobot("robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 ball1 = pam_mujoco.MujocoItem(
     "ball1", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL, color=(1, 0, 0, 1)
 )

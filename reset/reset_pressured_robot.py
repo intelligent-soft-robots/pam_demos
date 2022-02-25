@@ -3,7 +3,7 @@ import time
 import o80
 import pam_mujoco
 
-robot = pam_mujoco.MujocoRobot("robot", control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
+robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
 handle = pam_mujoco.MujocoHandle("pam_demos_reset", robot1=robot)
 robot = handle.frontends["robot"]
 
