@@ -14,8 +14,9 @@ ball2 = pam_mujoco.MujocoItem(
     color=(0, 0, 1, 1),
     contact_type=pam_mujoco.ContactTypes.table,
 )
+table = pam_mujoco.MujocoTable("table")
 handle = pam_mujoco.MujocoHandle(
-    "pam_demos_reset", table=True, robot1=robot, balls=(ball1, ball2)
+    "pam_demos_reset", table=table, robot1=robot, balls=(ball1, ball2)
 )
 
 # getting the frontend connected to the robot's pressure controller

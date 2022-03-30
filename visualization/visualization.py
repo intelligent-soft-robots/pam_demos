@@ -22,10 +22,11 @@ hit_point = pam_mujoco.MujocoItem(
     "hit_point", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL
 )
 goal = pam_mujoco.MujocoItem("goal", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL)
+table = pam_mujoco.MujocoTable("table")
 handle = pam_mujoco.MujocoHandle(
     "demo-simulation",
     graphics=False,
-    table=True,
+    table=table,
     robot1=robot,
     balls=(ball,),
     goals=(goal,),
@@ -68,30 +69,25 @@ time.sleep(3)
 # reading pre-recorded trajectories
 
 
-index, trajectory = list(context.BallTrajectories().random_trajectory())
-
-print(
-    "ball will play trajectory {}".format(
-        context.BallTrajectories().get_file_name(index)
-    )
-)
+trajectory = list(context.BallTrajectories("originals").random_trajectory())
+iterator = context.BallTrajectories.iterate(trajectory)
 
 # moving ball 1 and ball 2 to first trajectories point
-position = trajectory[0].position
-velocity = trajectory[0].velocity
+_,state = next(iterator)
 duration = o80.Duration_us.seconds(2)
-ball.add_command(position, velocity, duration, o80.Mode.QUEUE)
+ball.add_command(state.get_position(), state.get_velocity(), duration, o80.Mode.QUEUE)
 ball.pulse()
 
 time.sleep(4)
 
 
 # loading and playing the trajectories
-duration_s = 0.01
-duration = o80.Duration_us.milliseconds(int(duration_s * 1000))
-total_duration = duration_s * len(trajectory)
-for traj_point in trajectory:
-    ball.add_command(traj_point.position, traj_point.velocity, duration, o80.Mode.QUEUE)
+for duration,state in iterator:
+    duration = o80.Duration_us.microseconds(duration)
+    ball.add_command(state.get_position(),
+                     state.get_velocity(),
+                     duration,
+                     o80.Mode.QUEUE)
     ball.pulse()
 
 

@@ -30,7 +30,7 @@ def get_handle():
     accelerated_time = False
 
     # creating the robot, specifying pressure control
-    pamy1 = False # i.e. pamy2
+    pamy1 = False
     robot = pam_mujoco.MujocoRobot(pamy1,robot_segment_id, control=control)
 
     # during its construction, the handle will write the configuration in the

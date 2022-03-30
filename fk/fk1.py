@@ -12,7 +12,7 @@ accelerated_time = False
 burst_mode = False
 
 robot_control = pam_mujoco.MujocoRobot(
-    segment_id, control=pam_mujoco.MujocoRobot.JOINT_CONTROL
+    False, segment_id, control=pam_mujoco.MujocoRobot.JOINT_CONTROL
 )
 handle = pam_mujoco.MujocoHandle(
     mujoco_id,

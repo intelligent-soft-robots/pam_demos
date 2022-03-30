@@ -24,11 +24,13 @@ ball2 = pam_mujoco.MujocoItem(
 hit_point = pam_mujoco.MujocoItem(
     "hit_point", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL
 )
+table = pam_mujoco.MujocoTable("table")
+
 graphics = True
 accelerated_time = False
 handle = pam_mujoco.MujocoHandle(
     "tutorial_4",
-    table=True,
+    table=table,
     robot1=robot,
     balls=(ball1, ball2),
     hit_points=(hit_point,),
@@ -43,40 +45,41 @@ ball2 = handle.frontends["ball2"]
 hit_point = handle.frontends["hit_point"]
 
 # moving the balls and the robot to a target position
-
 print("starting state ball1: {}".format(ball1.latest()))
 print("starting state ball2: {}".format(ball2.latest()))
-
 
 # target position of balls
 position1 = (0.5, 3, 1)
 position2 = (1.5, 3, 1)
 velocity = (0, 0, 0)
+
 # target position of robot
 joints = (math.pi / 4.0, -math.pi / 4.0, math.pi / 4.0, -math.pi / 4.0)
 joint_velocities = (0, 0, 0, 0)
 
+# the balls and robot will move over 2 seconds
 duration = o80.Duration_us.seconds(2)
 
+# loading the commands
 ball1.add_command(position1, velocity, duration, o80.Mode.QUEUE)
 ball2.add_command(position2, velocity, duration, o80.Mode.QUEUE)
 robot.add_command(joints, joint_velocities, duration, o80.Mode.QUEUE)
 
+# sending the commands
 ball1.pulse()
 ball2.pulse()
 robot.pulse()
 
+# waiting for completion
+time.sleep(3)
 
+# reached state
 print("reached state ball1: {}".format(ball1.latest()))
 print("reached state ball2: {}".format(ball2.latest()))
 print("reached state robot: {}".format(robot.latest()))
 
-time.sleep(3)
-
 
 # reading pre-recorded trajectories
-
-
 index1, trajectory1 = list(context.BallTrajectories().random_trajectory())
 index2, trajectory2 = list(context.BallTrajectories().random_trajectory())
 

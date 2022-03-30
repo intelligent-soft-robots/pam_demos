@@ -4,7 +4,7 @@ import o80
 import pam_mujoco
 
 # creating the mujoco's configuration, and getting the handle
-robot = pam_mujoco.MujocoRobot("robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(True, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 ball1 = pam_mujoco.MujocoItem(
     "ball1", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL, color=(1, 0, 0, 1)
 )
@@ -14,8 +14,11 @@ ball2 = pam_mujoco.MujocoItem(
     color=(0, 0, 1, 1),
     contact_type=pam_mujoco.ContactTypes.table,
 )
+
+table = pam_mujoco.MujocoTable("table")
+
 handle = pam_mujoco.MujocoHandle(
-    "pam_demos_pause", table=True, robot1=robot, balls=(ball1, ball2)
+    "pam_demos_pause", table=table, robot1=robot, balls=(ball1, ball2)
 )
 
 # in case this demo is run several times
