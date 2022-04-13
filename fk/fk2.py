@@ -19,7 +19,7 @@ ball = pam_mujoco.MujocoItem(
 )
 
 robot_control = pam_mujoco.MujocoRobot(
-    False,
+    pam_mujoco.RobotType.PAMY2,
     robot_segment_id,
     position = [0.]*3,
     control=pam_mujoco.MujocoRobot.JOINT_CONTROL

@@ -29,7 +29,7 @@ def run():
     # -----------------------------------------------------------
     # A joint controlled robot
     robot = pam_mujoco.MujocoRobot(
-        False, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL
+        pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL
     )
     # A few balls, setting contact with robot's racket
     balls = pam_mujoco.MujocoItems("balls")

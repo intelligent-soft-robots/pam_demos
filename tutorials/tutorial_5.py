@@ -5,7 +5,7 @@ import pam_mujoco
 
 # to run this tutorial, start pam_mujoco with mujoco_id "tutorial_5"
 
-robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 graphics = False
 handle = pam_mujoco.MujocoHandle("tutorial_5", robot1=robot, graphics=graphics)
 

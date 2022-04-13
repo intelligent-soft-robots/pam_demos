@@ -42,7 +42,7 @@ def run():
     )
     # configuring the robot, with joint control
     robot = pam_mujoco.MujocoRobot(
-        False,
+        pam_mujoco.RobotType.PAMY1,
         "robot",
         control=pam_mujoco.MujocoRobot.JOINT_CONTROL,
     )

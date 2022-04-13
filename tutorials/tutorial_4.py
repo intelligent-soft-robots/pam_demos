@@ -11,7 +11,7 @@ import pam_mujoco
 # contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
 # position and velocity).
 # also other items (balls, hit point) are added and controlled.
-robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 ball1 = pam_mujoco.MujocoItem(
     "ball1", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL, color=(1, 0, 0, 1)
 )
@@ -48,6 +48,10 @@ hit_point = handle.frontends["hit_point"]
 print("starting state ball1: {}".format(ball1.latest()))
 print("starting state ball2: {}".format(ball2.latest()))
 
+# one the way to the initial position, the contacts
+# between ball2 and the table may be annoying
+handle.deactivate_contact("ball2")
+
 # target position of balls
 position1 = (0.5, 3, 1)
 position2 = (1.5, 3, 1)
@@ -58,7 +62,7 @@ joints = (math.pi / 4.0, -math.pi / 4.0, math.pi / 4.0, -math.pi / 4.0)
 joint_velocities = (0, 0, 0, 0)
 
 # the balls and robot will move over 2 seconds
-duration = o80.Duration_us.seconds(2)
+duration = o80.Duration_us.seconds(1)
 
 # loading the commands
 ball1.add_command(position1, velocity, duration, o80.Mode.QUEUE)
@@ -71,54 +75,50 @@ ball2.pulse()
 robot.pulse()
 
 # waiting for completion
-time.sleep(3)
+time.sleep(2)
 
 # reached state
 print("reached state ball1: {}".format(ball1.latest()))
 print("reached state ball2: {}".format(ball2.latest()))
 print("reached state robot: {}".format(robot.latest()))
 
+# reactivating the contacts
+handle.activate_contact("ball2")
 
 # reading pre-recorded trajectories
-index1, trajectory1 = list(context.BallTrajectories().random_trajectory())
-index2, trajectory2 = list(context.BallTrajectories().random_trajectory())
-
-print(
-    "ball1 will play trajectory {}".format(
-        context.BallTrajectories().get_file_name(index1)
-    )
-)
-print(
-    "ball2 will play trajectory {}".format(
-        context.BallTrajectories().get_file_name(index2)
-    )
-)
+trajectory1 = context.BallTrajectories("originals").random_trajectory()
+trajectory2 = context.BallTrajectories("originals").random_trajectory()
+iterator1 = context.BallTrajectories.iterate(trajectory1)
+iterator2 = context.BallTrajectories.iterate(trajectory2)
 
 # moving ball 1 and ball 2 to first trajectories point
-position1 = trajectory1[0].position
-velocity1 = trajectory1[0].velocity
-position2 = trajectory2[0].position
-velocity2 = trajectory2[0].velocity
-duration = o80.Duration_us.seconds(2)
+_,state1=next(iterator1)
+_,state2=next(iterator2)
+position1 = state1.get_position()
+velocity1 = state1.get_velocity()
+position2 = state2.get_position()
+velocity2 = state2.get_velocity()
+duration = o80.Duration_us.seconds(1)
 ball1.add_command(position1, velocity1, duration, o80.Mode.QUEUE)
 ball2.add_command(position2, velocity2, duration, o80.Mode.QUEUE)
 ball1.pulse()
 ball2.pulse()
 
-time.sleep(4)
+time.sleep(2)
 
 
 # loading and playing the trajectories
 duration_s = 0.01
 duration = o80.Duration_us.milliseconds(int(duration_s * 1000))
-for trajectory, ball in zip((trajectory1, trajectory2), (ball1, ball2)):
-    total_duration = duration_s * len(trajectory)
-    for traj_point in trajectory:
+for iterator, ball in zip((iterator1, iterator2), (ball1, ball2)):
+    for duration,state in iterator: 
         ball.add_command(
-            traj_point.position, traj_point.velocity, duration, o80.Mode.QUEUE
+            state.get_position(),
+            state.get_velocity(),
+            o80.Duration_us.microseconds(duration), o80.Mode.QUEUE
         )
-        ball1.pulse()
-        ball2.pulse()
+ball1.pulse()
+ball2.pulse()
 
 
 # monitoring for contact

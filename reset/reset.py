@@ -4,7 +4,7 @@ import o80
 import pam_mujoco
 
 # creating the mujoco's configuration, and getting the handle
-robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 ball1 = pam_mujoco.MujocoItem(
     "ball1", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL, color=(1, 0, 0, 1)
 )

@@ -21,7 +21,7 @@ def configure_pseudo_real(
         burst_mode = False
 
     robot = pam_mujoco.MujocoRobot(
-        True, SEGMENT_ID_PSEUDO_REAL_ROBOT, control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL
+        pam_mujoco.RobotType.PAMY1, SEGMENT_ID_PSEUDO_REAL_ROBOT, control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL
     )
     handle = pam_mujoco.MujocoHandle(
         mujoco_id,
@@ -40,7 +40,7 @@ def configure_simulation(mujoco_id=MUJOCO_ID_SIMULATED, graphics=True):
     burst_mode = True
 
     robot = pam_mujoco.MujocoRobot(
-        True, SEGMENT_ID_ROBOT_MIRROR, control=pam_mujoco.MujocoRobot.JOINT_CONTROL
+        pam_mujoco.RobotType.PAMY1, SEGMENT_ID_ROBOT_MIRROR, control=pam_mujoco.MujocoRobot.JOINT_CONTROL
     )
     handle = pam_mujoco.MujocoHandle(
         mujoco_id,

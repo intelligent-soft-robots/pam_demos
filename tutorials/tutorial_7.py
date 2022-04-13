@@ -9,7 +9,7 @@ import context
 # to run this tutorial, start pam_mujoco with mujoco_id "tutorial_7"
 
 # creating the mujoco's configuration, and getting the handle
-robot = pam_mujoco.MujocoRobot(False, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
 ball = pam_mujoco.MujocoItem("ball", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL)
 handle = pam_mujoco.MujocoHandle(
     "tutorial_7", burst_mode=True, accelerated_time=True, robot1=robot, balls=(ball,)
