@@ -6,34 +6,44 @@ import o80_pam
 import pam_mujoco
 
 
-mujoco_id = "position_control"
-robot_segment_id = "robot"
-burst_mode=False
-accelerated_time=False
-
-def _get_handle():
-
-    control = pam_mujoco.MujocoRobot.PRESSURE_CONTROL
-    graphics = True
-    pamy = pam_mujoco.RobotType.PAMY1
-    robot = pam_mujoco.MujocoRobot(pamy,robot_segment_id, control=control)
-    handle = pam_mujoco.MujocoHandle(
-        mujoco_id, robot1=robot, graphics=graphics, accelerated_time=accelerated_time,
-        burst_mode=burst_mode
-    )
-    return handle,robot.json_control_path
+real_robot = False
 
 
-# getting the handle and the json file used to configure
-# the robot (to get min and max pressures)
-handle,robot_config_path = _get_handle()
-pressure_interface = handle.interfaces[robot_segment_id]
+if not real_robot:
 
-# frontend to robot
-frontend = handle.frontends[robot_segment_id]
+    mujoco_id = "position_control"
+    robot_segment_id = "robot"
+    burst_mode=False
+    accelerated_time=False
+
+    def _get_handle():
+
+        control = pam_mujoco.MujocoRobot.PRESSURE_CONTROL
+        graphics = True
+        pamy = pam_mujoco.RobotType.PAMY1
+        robot = pam_mujoco.MujocoRobot(pamy,robot_segment_id, control=control)
+        handle = pam_mujoco.MujocoHandle(
+            mujoco_id, robot1=robot, graphics=graphics, accelerated_time=accelerated_time,
+            burst_mode=burst_mode
+        )
+        return handle,robot.json_control_path
+
+
+    # getting the handle and the json file used to configure
+    # the robot (to get min and max pressures)
+    handle,robot_config_path = _get_handle()
+
+    # frontend to robot
+    frontend = handle.frontends[robot_segment_id]
+    robot_config = pam_interface.JsonConfiguration(robot_config_path)
+    
+else:
+
+    frontend = o80_pam.FrontEnd("real_robot")
+    robot_config = pam_interface.Pamy2DefaultConfiguration(False)
 
 # configuring the controller
-robot_config = pam_interface.JsonConfiguration(robot_config_path)
+
 kp = [0.2,0.2,0.2,0.2]
 kd = [0.02,0.02,0.02,0.02]
 ki = [0.05,0.05,0.05,0.05]
