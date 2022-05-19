@@ -42,6 +42,10 @@ else:
     frontend = o80_pam.FrontEnd("real_robot")
     robot_config = pam_interface.Pamy2DefaultConfiguration(False)
 
+
+# will be used for plotting
+starting_iteration = frontend.latest().get_iteration()
+    
 # configuring the controller
 
 kp = [0.2,0.2,0.2,0.2]
@@ -121,5 +125,18 @@ go_to(target_position1)
 go_to(target_position2)
 go_to(target_position2)
 
-go_to(target_position1)
-go_to(target_position1)
+#go_to(target_position1)
+#go_to(target_position1)
+
+
+# plotting motions of joints
+observations = frontend.get_observations_since(starting_iteration)
+dofs = [[obs.get_positions()[dim] for obs in observations] for dim in range(4)]
+x = [i for i in range(len(observations))]
+
+import matplotlib.pyplot as plt
+
+for dim,history in enumerate(dofs):
+    plt.scatter(x,dofs[dim])
+
+plt.show()
