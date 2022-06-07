@@ -5,20 +5,13 @@ import o80_pam
 import pam_mujoco
 
 
-MUJOCO_ID = "frequency"
-ROBOT_SEGMENT_ID = "robot"
+ROBOT_SEGMENT_ID = "real_robot"
 
-def run(mujoco_id: str, robot_segment_id: str):
+def run(robot_segment_id: str):
 
-    # configuring pam_mujoco and getting a frontend to the robot
-    control = pam_mujoco.MujocoRobot.PRESSURE_CONTROL
-    graphics = True
-    accelerated_time = False
-    robot = pam_mujoco.MujocoRobot(pam_mujoco.RobotType.PAMY2,robot_segment_id, control=control)
-    handle = pam_mujoco.MujocoHandle(
-        mujoco_id, robot1=robot, graphics=graphics, accelerated_time=accelerated_time
-    )
-    robot : o80_pam.FrontEnd = handle.frontends[robot_segment_id]
+    # frontend to the robot. o80_pamy1, o80_pamy2 or o80_dummy
+    # expected to have been started from another terminal
+    robot : o80_pam.FrontEnd = o80_pam.FrontEnd(robot_segment_id)
     
     # getting the number of the current iteration
     iteration_start = robot.latest().get_iteration()
@@ -69,11 +62,9 @@ def run(mujoco_id: str, robot_segment_id: str):
     observations = robot.get_observations_since(iteration_start)
     nb_observations = len(observations)
 
-    ## computing the frequency of each step
-    time_stamps = [o.get_time_stamp() for o in observations]
-    periods = [(ts2 - ts1) * 1e-9 for ts1, ts2 in zip(time_stamps, time_stamps[1:])]
-    frequencies = [1.0 / p for p in periods]
-
+    ## reading the frequency of each step
+    frequencies = [o.get_frequency() for o in observations]
+    
     ## some stats
     max_frequency = max(frequencies)
     min_frequency = min(frequencies)
@@ -88,39 +79,46 @@ def run(mujoco_id: str, robot_segment_id: str):
     decent_frequencies = [
         f for f in frequencies if f <= up_tolerance1 and f >= down_tolerance1
     ]
-    average = sum(decent_frequencies) / len(decent_frequencies)
-    std = numpy.std(numpy.array(decent_frequencies))
-
+    if decent_frequencies:
+        average = sum(decent_frequencies) / len(decent_frequencies)
+        std = numpy.std(numpy.array(decent_frequencies))
+    else:
+        average,std = None,None
+        
     ## printing results
     print()
     print("Frequency monitoring, over {} iterations".format(nb_observations))
     print("\texpected frequency: {}".format(expected_frequency))
     print(
         "\tspikes over {}: {} ({}%)".format(
-            up_tolerance1, nb_up_spikes1, float(nb_up_spikes1) / nb_observations
+            up_tolerance1, nb_up_spikes1, 100. * float(nb_up_spikes1) / nb_observations
         )
     )
     print(
         "\tspikes over {}: {} ({}%)".format(
-            up_tolerance2, nb_up_spikes2, float(nb_up_spikes2) / nb_observations
+            up_tolerance2, nb_up_spikes2, 100. * float(nb_up_spikes2) / nb_observations
         )
     )
     print(
         "\tspikes below {}: {} ({}%)".format(
-            down_tolerance1, nb_down_spikes1, float(nb_down_spikes1) / nb_observations
+            down_tolerance1, nb_down_spikes1, 100. * float(nb_down_spikes1) / nb_observations
         )
     )
     print(
         "\tspikes below {}: {} ({}%)".format(
-            down_tolerance2, nb_down_spikes2, float(nb_down_spikes2) / nb_observations
+            down_tolerance2, nb_down_spikes2, 100. * float(nb_down_spikes2) / nb_observations
         )
     )
     print("\tmax frequency observed: {}".format(max_frequency))
     print("\tmin frequency observed: {}".format(min_frequency))
-    print("\taverage frequency (spikes excluded): {}".format(average))
-    print("\tstandard deviation (spikes excluded): {}".format(std))
+    if average and std:
+        print("\taverage frequency (spikes excluded): {}".format(average))
+        print("\tstandard deviation (spikes excluded): {}".format(std))
+    else:
+        print("\taverage frequency (spikes excluded): no data")
+        print("\tstandard deviation (spikes excluded): no data")
     print()
 
 
 if __name__ == "__main__":
-    run(MUJOCO_ID,ROBOT_SEGMENT_ID)
+    run(ROBOT_SEGMENT_ID)
