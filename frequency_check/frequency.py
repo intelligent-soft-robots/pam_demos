@@ -1,0 +1,126 @@
+import numpy
+import math
+import o80
+import o80_pam
+import pam_mujoco
+
+
+MUJOCO_ID = "frequency"
+ROBOT_SEGMENT_ID = "robot"
+
+def run(mujoco_id: str, robot_segment_id: str):
+
+    # configuring pam_mujoco and getting a frontend to the robot
+    control = pam_mujoco.MujocoRobot.PRESSURE_CONTROL
+    graphics = True
+    accelerated_time = False
+    robot = pam_mujoco.MujocoRobot(pam_mujoco.RobotType.PAMY2,robot_segment_id, control=control)
+    handle = pam_mujoco.MujocoHandle(
+        mujoco_id, robot1=robot, graphics=graphics, accelerated_time=accelerated_time
+    )
+    robot : o80_pam.FrontEnd = handle.frontends[robot_segment_id]
+    
+    # getting the number of the current iteration
+    iteration_start = robot.latest().get_iteration()
+
+    # doing some stuff
+
+    for _ in range(5):
+    
+        ## sending two commands and waiting for completion
+        pressure = 12000
+        duration = 1  # seconds
+        robot.add_command(
+            [pressure] * 4, [pressure] * 4, o80.Duration_us.seconds(duration), o80.Mode.QUEUE
+        )
+        pressure = 20000
+        robot.add_command(
+            [pressure] * 4, [pressure] * 4, o80.Duration_us.seconds(duration), o80.Mode.QUEUE
+        )
+        robot.pulse_and_wait()
+
+        ## creating a sinusoid trajectory and playing it
+        pressure = 15000
+        v = 0.0
+        increment = 0.025
+        amplitude = 3000
+        dof = 2
+        for _ in range(5000):
+            v += increment
+            ago = pressure + int(amplitude * math.sin(v))
+            antago = pressure - int(amplitude * math.sin(v))
+            robot.add_command(dof, ago, antago, o80.Mode.QUEUE)
+            # playing the trajectory
+            robot.pulse_and_wait()
+
+
+    # check how the frequency of the backend did
+
+    ## backend frequency and allowed limits
+    expected_frequency = 500.
+    five_percent = expected_frequency * 0.05
+    ten_percent = expected_frequency * 0.1
+    up_tolerance1 = expected_frequency + five_percent
+    up_tolerance2 = expected_frequency + ten_percent
+    down_tolerance1 = expected_frequency - five_percent
+    down_tolerance2 = expected_frequency - ten_percent
+    
+    ## getting all observations
+    observations = robot.get_observations_since(iteration_start)
+    nb_observations = len(observations)
+
+    ## computing the frequency of each step
+    time_stamps = [o.get_time_stamp() for o in observations]
+    periods = [(ts2 - ts1) * 1e-9 for ts1, ts2 in zip(time_stamps, time_stamps[1:])]
+    frequencies = [1.0 / p for p in periods]
+
+    ## some stats
+    max_frequency = max(frequencies)
+    min_frequency = min(frequencies)
+    up_spikes1 = [f for f in frequencies if f > up_tolerance1]
+    nb_up_spikes1 = len(up_spikes1)
+    up_spikes2 = [f for f in frequencies if f > up_tolerance2]
+    nb_up_spikes2 = len(up_spikes2)
+    down_spikes1 = [f for f in frequencies if f < down_tolerance1]
+    nb_down_spikes1 = len(down_spikes1)
+    down_spikes2 = [f for f in frequencies if f < down_tolerance2]
+    nb_down_spikes2 = len(down_spikes2)
+    decent_frequencies = [
+        f for f in frequencies if f <= up_tolerance1 and f >= down_tolerance1
+    ]
+    average = sum(decent_frequencies) / len(decent_frequencies)
+    std = numpy.std(numpy.array(decent_frequencies))
+
+    ## printing results
+    print()
+    print("Frequency monitoring, over {} iterations".format(nb_observations))
+    print("\texpected frequency: {}".format(expected_frequency))
+    print(
+        "\tspikes over {}: {} ({}%)".format(
+            up_tolerance1, nb_up_spikes1, float(nb_up_spikes1) / nb_observations
+        )
+    )
+    print(
+        "\tspikes over {}: {} ({}%)".format(
+            up_tolerance2, nb_up_spikes2, float(nb_up_spikes2) / nb_observations
+        )
+    )
+    print(
+        "\tspikes below {}: {} ({}%)".format(
+            down_tolerance1, nb_down_spikes1, float(nb_down_spikes1) / nb_observations
+        )
+    )
+    print(
+        "\tspikes below {}: {} ({}%)".format(
+            down_tolerance2, nb_down_spikes2, float(nb_down_spikes2) / nb_observations
+        )
+    )
+    print("\tmax frequency observed: {}".format(max_frequency))
+    print("\tmin frequency observed: {}".format(min_frequency))
+    print("\taverage frequency (spikes excluded): {}".format(average))
+    print("\tstandard deviation (spikes excluded): {}".format(std))
+    print()
+
+
+if __name__ == "__main__":
+    run(MUJOCO_ID,ROBOT_SEGMENT_ID)
