@@ -1,10 +1,20 @@
+'''
+Provides some statistics about the frequency of a o80 backend
+controlling the pressures of a robot.
+Before running this script, one of "o80_pamy1", "o80_pamy2" or
+"o80_dummy" must have been started in another terminal.
+This script will have the robot performing some commands, and then
+display information about the frequency of the backend. 
+'''
+
 import numpy
 import math
 import o80
 import o80_pam
 import pam_mujoco
 
-
+# should be the same as the segment_id used by the robot backend.
+# "real_robot" is the default.
 ROBOT_SEGMENT_ID = "real_robot"
 
 def run(robot_segment_id: str):
@@ -16,10 +26,13 @@ def run(robot_segment_id: str):
     # getting the number of the current iteration
     iteration_start = robot.latest().get_iteration()
 
-    # doing some stuff
+    # sending some commands
+    print("sending some commands:")
 
-    for _ in range(5):
-    
+    for iteration in range(5):
+
+        print("\titeration {}/5".format(iteration+1))
+        
         ## sending two commands and waiting for completion
         pressure = 12000
         duration = 1  # seconds
@@ -43,8 +56,8 @@ def run(robot_segment_id: str):
             ago = pressure + int(amplitude * math.sin(v))
             antago = pressure - int(amplitude * math.sin(v))
             robot.add_command(dof, ago, antago, o80.Mode.QUEUE)
-            # playing the trajectory
-            robot.pulse_and_wait()
+        # playing the trajectory
+        robot.pulse_and_wait()
 
 
     # check how the frequency of the backend did
