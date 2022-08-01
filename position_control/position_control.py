@@ -50,9 +50,9 @@ starting_iteration = frontend.latest().get_iteration()
     
 # configuring the controller
 
-kp = [0.4309, 1.212, .4, .05]#[0.06,0.6,0.4,0.03] #[0.05,0.5,0.3,0.01]
+kp = [0.4309, 1.212, 0.55, .05]#[0.06,0.6,0.4,0.03] #[0.05,0.5,0.3,0.01]
 kd = [0.04978, 0.1712, 0.0, 0.0]
-ki = [0.05629, 0.08202, .08, .1]#[0.035,0.07,0.06,0.07]#[0.0275,0.055,0.04,0.05]
+ki = [0.05629, 0.08202, .11, .1]#[0.035,0.07,0.06,0.07]#[0.0275,0.055,0.04,0.05]
 ndp = [.9]*4#[0.5,0.6,0.5,0.5]
 time_step = 0.05
 o80_time_step = o80.Duration_us.milliseconds(int(time_step*1000))
@@ -114,7 +114,7 @@ def go_to(target_position,p):
             # print()
             # print([i/math.pi*180 for i in target_position])
             # print([i/math.pi*180 for i in position])
-            print([i/math.pi*180 for i in error])
+            print("errs: ",[i/math.pi*180 for i in error])
 
         return position, velocities, error
     
@@ -137,13 +137,6 @@ def go_to(target_position,p):
             break
     print("elapsed time: ",time.time() - t)
         
-
-    
-
-    
-    
-        
-
 # desired positions
 pi2 = math.pi/2.0
 pi4 = math.pi/4.0
@@ -153,15 +146,15 @@ target_position2 = [0,+pi4,0,0]
 
 # starting in a vertical position
 
-    
-for i in range(20):
+n_its = 10
+for i in range(n_its):
     # calling twice in a row for each target position
     target_position1 = [random.uniform(-pi2, pi2), random.uniform(-pi2, pi2),
                         random.uniform(-pi2, pi2), random.uniform(-pi2, pi2)]
     # target_position2 = [random.uniform(-pi2, pi2), random.uniform(-pi2, pi2),
     #                     random.uniform(-pi2, pi2), random.uniform(-pi2, pi2)]
     print("---------")
-    print("it ",i)
+    print("it ",i+1," / ",n_its)
     time.sleep(2)
     go_to(target_position1,False)
     # time.sleep(1)
