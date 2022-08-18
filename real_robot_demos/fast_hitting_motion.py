@@ -44,16 +44,17 @@ pressureAGO_0 = [15000, 15000, 15000, 15000]
 pressureANT_0 = [30000, 30000, 30000, 30000]
 pressureAGO_1 = [30000, 30000, 30000, 30000]
 pressureANT_1 = [15000, 15000, 15000, 15000]
-duration = 625  # Default: 625 ms (aggressiv but not dangerous)
+duration = 3000  # Default: 625 ms (aggressiv but not dangerous)
 
 # bring robot to initial position
 frontend.add_command(pressureAGO_0, pressureANT_0,
-                     o80.Duration_us.milliseconds(1000),
+                     o80.Duration_us.milliseconds(duration),
                      o80.Mode.OVERWRITE)
 frontend.pulse_and_wait()
+input("press key...")
 
 # run repetitive hitting motions
-for i in range(10):
+for i in range(1):
     # creating a command locally. The command is *not* sent to the robot yet.
     frontend.add_command(pressureAGO_0, pressureANT_0,
                          o80.Duration_us.milliseconds(duration),
@@ -64,6 +65,7 @@ for i in range(10):
 
     # sending the command to the robot, and waiting for its completion.
     frontend.pulse_and_wait()
+    
 
 # bring robot to initial position for the next run
 frontend.add_command(pressureAGO_0, pressureANT_0,
