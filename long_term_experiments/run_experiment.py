@@ -15,7 +15,7 @@ from tinkerforge.bricklet_thermal_imaging import BrickletThermalImaging
 
 
 real_robot = True
-pressures_mid = [20000, 18250, 17000, 19000, 20500, 20500, 17000, 19000]
+pressures_mid = [20000, 19500, 17000, 19000, 22000, 21500, 17000, 19000]  #was: pressures_mid = [20000, 18250, 17000, 19000, 20500, 20500, 17000, 19000]
 pressures_half_range = [5000, 3250, 4000, 6000, 4500, 4500, 4000, 6000]
 
 def init_robot():
@@ -51,10 +51,19 @@ def init_robot():
     return frontend, robot_config
 
 def init_position_controller(robot_config):
-    kp = [0.4309, 1.212, 0.55, .2]                                #[0.06,0.6,0.4,0.03] #[0.05,0.5,0.3,0.01]
-    #kp = [p * 0.8 for p in kp]
+    #original
+    # kp = [0.4309, 1.212, 0.55, .2]   
+    # kd = [0.04978, 0.1712, 0.0, 0.0]
+    # ki = [0.05629, 0.08202, .11, .25]  
+
+    kp = [0.4309, 1.212, 0.55, .2]   
     kd = [0.04978, 0.1712, 0.0, 0.0]
-    ki = [0.05629, 0.08202, .11, .25]                           #[0.035,0.07,0.06,0.07]#[0.0275,0.055,0.04,0.05]
+    ki = [0.05629, 0.08202, .11, .25]  
+
+    # kp = [0.3, 1.2, 0.55, .2]                                #[0.06,0.6,0.4,0.03] #[0.05,0.5,0.3,0.01]
+    # #kp = [p * 0.8 for p in kp]
+    # kd = [0.03, 0.2, 0.0, 0.0]
+    # ki = [0.1, 0.1, .11, .25]                           #[0.035,0.07,0.06,0.07]#[0.0275,0.055,0.04,0.05]
     #ki = [p * 0.8 for p in ki]
     ndp = [.9]*4                                                 #[0.5,0.6,0.5,0.5]
     time_step = 0.05
@@ -131,7 +140,7 @@ def control(target_position):
 # going to desired position using the controller
 def go_to(target_position, error_check = True):
     t = time.time()
-    for i in range(10):
+    for i in range(10):    # was 10
         position, velocities, error = control(target_position)
         
         if not ( max([abs(i/math.pi*180) for i in error]) > 5 or max(abs(np.mean(velocities,axis=1))) > 0.5 ):
@@ -146,22 +155,22 @@ def go_to(target_position, error_check = True):
             time.sleep(1)
             print("continuing...")
     
-    print("target position not reached...")
-    print("error:", [abs(i/math.pi*180) for i in error], "velocities", np.mean(velocities,axis=1))
-    print("pausing...")
-    input()
+    print("target position not reached...") * 0.5
 
 def move_to_zero_position():
+    pressures = [[24555, 23606, 20856, 24056, 20228, 20192, 25019, 22000]]
+    time.sleep(0.05)
+    open_loop_motion(500, 1, pressures)
     target_position = [0,0,0,0]
     go_to(target_position)
     pressures_current = frontend.latest().get_observed_pressures()
     print(pressures_current)
-    pressures = [[20500, 20000, 20000, 25000, 20000, 20500, 20000, 20000]]
-    open_loop_motion(500, 1, pressures)
+    #pressures = [[20500, 20000, 20000, 25000, 20000, 20500, 20000, 20000]]
+    #open_loop_motion(500, 1, pressures)
 
 def move_to_random_position():
     target_position = [np.random.random() * np.pi - np.pi/2] * 4
-    go_to(target_position)
+    go_to(target_position, error_check=False)
 
 def move_to_list_of_positions():
     position_list = [[-1, 1, -1, 1], [1, 1, 1, -1], [1, -1, -1, 1], [-1, -1, 1, -1],
@@ -173,17 +182,30 @@ def move_to_list_of_positions():
         go_to(target_position, error_check = False)
         time.sleep(0.05)
 
+# def move_to_list_of_pressures():
+#     position_list = [[-1, 1.0 * 0.2, -1, 1], [1, 0.8 * 0.2, 1, -1], [1, 0 * 0.2, -1, 1], [-1, -0.4 * 0.2, 1, -1],
+#                      [1, 0.8 * 0.2, 1, 1], [-1, 0.8 * 0.2, -1, -1], [-1, -0.4 * 0.2, 1, 1], [1, -0.8 * 0.2, -1, -1],
+#                     [-1, 0.8 * 0.2, 0, 1], [1, 0.8 * 0.2, 0, -1], [1, -0.2 * 0.2, 0, 0.5], [-1, -0.6 * 0.2, 0, -0.8]]
+#     for position in position_list:
+#         print(position)
+#         pressures = np.multiply(position + [-p for p in position], pressures_half_range) * 1.0 + np.array(pressures_mid)
+#         pressures = pressures.astype(int)
+#         pressures = [x.tolist() for x in pressures]
+#         print(pressures)
+#         open_loop_motion(3300, 1, [pressures])
+
+
 def move_to_list_of_pressures():
-    position_list = [[-1, 1.0 * 0.5, -1, 1], [1, 0.8 * 0.5, 1, -1], [1, 0 * 0.5, -1, 1], [-1, -0.4 * 0.5, 1, -1],
-                     [1, 0.8 * 0.5, 1, 1], [-1, 0.8 * 0.5, -1, -1], [-1, -0.4 * 0.5, 1, 1], [1, -0.8 * 0.5, -1, -1],
-                    [-1, 0.8 * 0.5, 0, 1], [1, 0.8 * 0.5, 0, -1], [1, -0.2 * 0.5, 0, 0.5], [-1, -0.6 * 0.5, 0, -0.8]]
+    position_list = [[-1, 1.0  * 0.2, -1, 1], [1, 0.8  * 0.2, 1, -1], [1, 0  * 0.2, -1, 1], [-1, -0.4  * 0.2, 1, -1],
+                     [1, 0.8  * 0.2, 1, 1], [-1, 0.8  * 0.2, -1, -1], [-1, -0.4  * 0.2, 1, 1], [1, -0.8  * 0.2, -1, -1],
+                    [-1, 0.8  * 0.2, 0, 1], [1, 0.8  * 0.2, 0, -1], [1, -0.2  * 0.2, 0, 0.5], [-1, -0.6  * 0.2, 0, -0.8]]
     for position in position_list:
         print(position)
-        pressures = np.multiply(position + [-p for p in position], pressures_half_range) * 0.9 + np.array(pressures_mid)
+        pressures = np.multiply(position + [-p for p in position], pressures_half_range) * 1.0 + np.array(pressures_mid)
         pressures = pressures.astype(int)
         pressures = [x.tolist() for x in pressures]
         print(pressures)
-        open_loop_motion(1300, 1, [pressures])
+        open_loop_motion(2000, 1, [pressures])
 
 
 def fast_hitting_motions(n, log=False):
@@ -192,10 +214,10 @@ def fast_hitting_motions(n, log=False):
     pressureANT_0 = [30000, 30000, 30000, 30000]
     pressureAGO_1 = [30000, 30000, 30000, 30000]
     pressureANT_1 = [15000, 15000, 15000, 15000]
-    duration = 625  # Default: 625 ms (aggressiv but not dangerous)
+    duration = 800  # Default: 625 ms (aggressiv but not dangerous)
 
     # go to initial position
-    open_loop_motion(2000, 1, [pressureAGO_0 + pressureANT_0])
+    open_loop_motion(duration, 1, [pressureAGO_0 + pressureANT_0])
 
     if log:
         first_iteration = frontend.latest().get_iteration()
@@ -204,7 +226,7 @@ def fast_hitting_motions(n, log=False):
     open_loop_motion(duration, n, [pressureAGO_0 + pressureANT_0, pressureAGO_1 + pressureANT_1])
 
     if log:
-        outname = "data/obs_fast_hitting_ " + str(duration) + "_duration_" + str(n) + "_times_"
+        outname = "data/obs_fast_hitting_" + str(duration) + "_duration_" + str(n) + "_times_"
         now = datetime.now()
         now_str = now.strftime("%Y-%m-%d_%H-%M-%S")
         file_name = f"{outname}_{now_str}"
@@ -307,6 +329,34 @@ def repeatability_motion2():
         f.flush()
 
 
+def repeatability_motion3():
+    
+    pressures_mid =[20000, 19500, 17000, 19000, 20000, 20750, 17000, 19000]
+
+    for i in range(2):
+        move_to_zero_position()
+    freq = [0.4] * 8
+    phase = [0, 0, np.pi, 0, np.pi, np.pi, 0, np.pi]
+    amp = [0.7, 0.3, 0.5, 0.6] * 2
+    duration = 5
+    
+    first_iteration = frontend.latest().get_iteration()
+
+    open_loop_sin_motion(freq, phase, amp, duration, pressures_mid)
+
+    outname = "data/obs_log"
+    now = datetime.now()
+    now_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+    file_name = f"{outname}_{now_str}"
+    with open(str(file_name), "wb+") as f:
+        serializer = o80_pam.Serializer()
+        observations = frontend.get_observations_since(first_iteration)
+        for observation in observations:
+            f.write(serializer.serialize(observation))
+        f.flush()
+
+
+
 
 def random_open_loop_motion(duration):
     freq = [np.random.random() * 0.5 for i in range(8)]
@@ -362,37 +412,34 @@ def capture_image():
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("data", type=str)
-    args = parser.parse_args()
-    print(args.data)
+    # parser = ArgumentParser()
+    # parser.add_argument("data", type=str)
+    # args = parser.parse_args()
+    # print(args.data)
 
     frontend, robot_config = init_robot()
     time_step, o80_time_step, position_controller_factory = init_position_controller(robot_config)
 
-    # for i in range(3):
-    #     print("...")
-    #     repeatability_motion()
 
-    #move_to_zero_position()
-    for i in range(10):
-        print("------", i+1, "/ 2000 --------")
-        fast_hitting_motions(5)
-        # move_to_zero_position()
-        # move_to_list_of_positions()
-        # move_to_list_of_pressures()
-        # repeatability_motion2()
-        # move_to_zero_position()
-        # time.sleep(0.1)
+    pressures = [[15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000]]
+    time.sleep(0.05)
+    open_loop_motion(3000, 1, pressures)
+
+
+    n = 1
+    for i in range(n):
+        #print("------", i+1, "/ " + str(n) + " --------")
+        #fast_hitting_motions(3, log=False)
+        
+        #move_to_list_of_pressures()
+        input()
+        #fast_hitting_motions(3)
+        #move_to_list_of_positions()
+        #move_to_list_of_pressures()
+        #repeatability_motion3()
+        #move_to_zero_position()
+        time.sleep(0.1)
         # capture_image()
-        # time.sleep(0.1)
         
         
     print("done")
-    #repeatability_motion()
-    # #repeatability experiment
-    # for i in range(2):
-    #     fast_hitting_motions(2)
-    #     repeatability_motion()
-    #     capture_image()
-    
