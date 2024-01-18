@@ -11,7 +11,9 @@ import pam_mujoco
 # contrary to tutorial 1 to 3, the robot will be joint controlled (i.e.
 # position and velocity).
 # also other items (balls, hit point) are added and controlled.
-robot = pam_mujoco.MujocoRobot(pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL)
+robot = pam_mujoco.MujocoRobot(
+    pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL
+)
 ball1 = pam_mujoco.MujocoItem(
     "ball1", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL, color=(1, 0, 0, 1)
 )
@@ -19,7 +21,8 @@ ball2 = pam_mujoco.MujocoItem(
     "ball2",
     control=pam_mujoco.MujocoItem.CONSTANT_CONTROL,
     color=(0, 0, 1, 1),
-    contact_type=pam_mujoco.ContactTypes.table,
+    contact_table=True,
+    contact_robot1=True,
 )
 hit_point = pam_mujoco.MujocoItem(
     "hit_point", control=pam_mujoco.MujocoItem.CONSTANT_CONTROL
@@ -50,7 +53,8 @@ print("starting state ball2: {}".format(ball2.latest()))
 
 # one the way to the initial position, the contacts
 # between ball2 and the table may be annoying
-handle.deactivate_contact("ball2")
+handle.deactivate_contact("ball2", "table")
+handle.deactivate_contact("ball2", "robot1")
 
 # target position of balls
 position1 = (0.5, 3, 1)
@@ -58,7 +62,7 @@ position2 = (1.5, 3, 1)
 velocity = (0, 0, 0)
 
 # target position of robot
-joints = (math.pi / 4.0, -math.pi / 4.0, math.pi / 4.0, -math.pi / 4.0)
+joints = (math.pi, -math.pi / 2.0, 0, +math.pi / 4.0)
 joint_velocities = (0, 0, 0, 0)
 
 # the balls and robot will move over 2 seconds
@@ -83,17 +87,18 @@ print("reached state ball2: {}".format(ball2.latest()))
 print("reached state robot: {}".format(robot.latest()))
 
 # reactivating the contacts
-handle.activate_contact("ball2")
+handle.activate_contact("ball2", "table")
+handle.activate_contact("ball2", "robot1")
 
 # reading pre-recorded trajectories
-trajectory1 = context.BallTrajectories("originals").random_trajectory()
-trajectory2 = context.BallTrajectories("originals").random_trajectory()
+trajectory1 = context.BallTrajectories("originals").get_trajectory(0)
+trajectory2 = context.BallTrajectories("originals").get_trajectory(1)
 iterator1 = context.BallTrajectories.iterate(trajectory1)
 iterator2 = context.BallTrajectories.iterate(trajectory2)
 
 # moving ball 1 and ball 2 to first trajectories point
-_,state1=next(iterator1)
-_,state2=next(iterator2)
+_, state1 = next(iterator1)
+_, state2 = next(iterator2)
 position1 = state1.get_position()
 velocity1 = state1.get_velocity()
 position2 = state2.get_position()
@@ -111,11 +116,12 @@ time.sleep(2)
 duration_s = 0.01
 duration = o80.Duration_us.milliseconds(int(duration_s * 1000))
 for iterator, ball in zip((iterator1, iterator2), (ball1, ball2)):
-    for duration,state in iterator: 
+    for duration, state in iterator:
         ball.add_command(
             state.get_position(),
             state.get_velocity(),
-            o80.Duration_us.microseconds(duration), o80.Mode.QUEUE
+            o80.Duration_us.microseconds(duration),
+            o80.Mode.QUEUE,
         )
 ball1.pulse()
 ball2.pulse()
@@ -127,32 +133,25 @@ ball2.pulse()
 # real table used for the recording of the ball trajectory.
 
 print("\nmonitoring for contact ...")
+detected_contacts = {"table": False, "robot1": False}
 time_start = time.time()
-contact = None
+while time.time() - time_start < 3:
+    for item in detected_contacts.keys():
+        if not detected_contacts[item]:
+            contact = handle.get_contact("ball2", item)
+            if contact.contact_occured:
+                # not reporting the same contact twice
+                detected_contacts[item] = True
+                print(f"detected contact with {item}:")
+                print("\tposition:", contact.position)
+                print("\ttime stamp", contact.time_stamp)
 
-while time.time() - time_start < 5:
-
-    # monitoring contact
-    contact = handle.get_contact("ball2")
-    if contact.contact_occured:
-        break
-
-    # having the hit point following the ball
-    position = ball2.latest().get_position()
-    hit_point.add_command(position, [0, 0, 0], o80.Mode.OVERWRITE)
-    hit_point.pulse()
-
-if not contact.contact_occured:
-    print(
-        "no contact between ball and table! "
-        "(minimal distance: {})".format(contact.minimal_distance)
-    )
-else:
-    print(
-        "contact occured\n"
-        "\tposition: {}\n"
-        "\ttime stamp: {}".format(contact.position, contact.time_stamp)
-    )
-
+# reporting also if contact did not occur
+for item in detected_contacts.keys():
+    if not detected_contacts[item]:
+        contact = handle.get_contact("ball2", item)
+        print(
+            f"no contact with {item}, minimal distance ball/{item}: {contact.minimal_distance}"
+        )
 
 print()

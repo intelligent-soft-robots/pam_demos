@@ -3,7 +3,11 @@ import time
 import o80
 import pam_mujoco
 
-robot = pam_mujoco.MujocoRobot(pam_interface.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL)
+robot = pam_mujoco.MujocoRobot(
+    pam_mujoco.RobotType.PAMY2,
+    "robot",
+    control=pam_mujoco.MujocoRobot.PRESSURE_CONTROL,
+)
 handle = pam_mujoco.MujocoHandle("pam_demos_reset", robot1=robot)
 robot = handle.frontends["robot"]
 
@@ -19,7 +23,6 @@ print("---\n")
 pressures = [15000, 20000, 12000, 20000, 0]
 
 for pressure in pressures:
-
     print("target pressure:", pressure)
 
     duration = 5  # seconds

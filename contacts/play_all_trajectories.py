@@ -1,7 +1,9 @@
-import math, time
-import o80, context
+import math
+import time
+import o80
+import context
 from handle_contacts import MUJOCO_ID, ROBOT_SEGMENT_ID, BALL_SEGMENT_ID
-from handle_contacts import get_robot_contact_handle
+from handle_contacts import get_handle
 
 # set the trajectories you want to play.
 # empty or none: play all trajectories
@@ -12,7 +14,6 @@ SLOWMO = False
 
 
 def run():
-
     def play_trajectory(handle, ball, trajectory):
         # to be able to fly to the racket on
         # the way to the init position
@@ -34,6 +35,7 @@ def run():
         handle.reset_contact(BALL_SEGMENT_ID)
         handle.activate_contact(BALL_SEGMENT_ID)
         for duration, state in iterator:
+            print("\t", duration, state)
             ball.add_command(
                 state.get_position(),
                 state.get_velocity(),
@@ -57,15 +59,16 @@ def run():
             # in "normal" time
             ball.pulse_and_wait()
 
-
-    handle = get_robot_contact_handle()
+    handle = get_handle(True, False, False)
     ball = handle.frontends[BALL_SEGMENT_ID]
     robot = handle.frontends[ROBOT_SEGMENT_ID]
 
     # target position of robot
     joints = (0, +math.pi / 3.0, +math.pi / 4.0, +math.pi / 4.0)
     joint_velocities = (0, 0, 0, 0)
-    robot.add_command(joints, joint_velocities, o80.Duration_us.seconds(1), o80.Mode.QUEUE)
+    robot.add_command(
+        joints, joint_velocities, o80.Duration_us.seconds(1), o80.Mode.QUEUE
+    )
     robot.pulse_and_wait()
 
     trajectories_generator = context.BallTrajectories("originals")
@@ -73,6 +76,7 @@ def run():
 
     for index, trajectory in trajectories.items():
         if (not FILTER) or (index in FILTER):
+            print("\t", index)
             play_trajectory(handle, ball, trajectory)
 
 

@@ -4,16 +4,16 @@ Assumes `pam_mujoco pam_demos_contacts` has been called
 from another terminal. 
 """
 
-import math, time
+import math
+import time
 import o80
 from handle_contacts import MUJOCO_ID, ROBOT_SEGMENT_ID, BALL_SEGMENT_ID
-from handle_contacts import get_robot_contact_handle
+from handle_contacts import get_handle
 
 
 def run():
-
     # creating the robot and the ball
-    handle = get_robot_contact_handle()
+    handle = get_handle(True, False, False)
 
     # frontend for control of ball and robot
     ball = handle.frontends[BALL_SEGMENT_ID]
@@ -22,20 +22,17 @@ def run():
     # in case contact have been disabled during a previous run
     handle.reset_contact(BALL_SEGMENT_ID)
 
-
     def _velocity(p1, p2, duration_ms):
-        # (constant) velocity when going from p1 to p2 in duration ms 
+        # (constant) velocity when going from p1 to p2 in duration ms
         return [(a - b) / (float(duration_ms) / 1000.0) for a, b in zip(p2, p1)]
 
-
     def _play_contact(start, end, duration=1000):
-
         # start and end should have been passed as relative
         # to the robot racket position, converting to
         # abs position
         cartesian_robot = robot.latest().get_cartesian_position()
-        start = [s+cr for s,cr in zip(start,cartesian_robot)]
-        end = [e+cr for e,cr in zip(end,cartesian_robot)]
+        start = [s + cr for s, cr in zip(start, cartesian_robot)]
+        end = [e + cr for e, cr in zip(end, cartesian_robot)]
 
         # deativating contacts
         handle.deactivate_contact(BALL_SEGMENT_ID)
@@ -99,7 +96,7 @@ def run():
     start = (+0.5, 2.0, 0)
     _play_contact(start, end, 500)
 
-    # bouncing top/down 
+    # bouncing top/down
     start = (0, 2.0, -0.5)
     end = (0, -0.1, 0)
     _play_contact(start, end, 500)

@@ -16,20 +16,21 @@ MUJOCO_ID = "balls_trajectories"
 # NB_BALLS = 3
 # NB_BALLS = 10
 NB_BALLS = 20
-## Boost error ! shared memory size issue ?
+# Boost error ! shared memory size issue ?
 # NB_BALLS = 50
 # NB_BALLS = 100
 
 
 def run():
-
     # configuring pam_mujoco.
     # It is assumed here that "pam_mujoco ball_trajectories" has
     # been called in another terminal.
     # -----------------------------------------------------------
     # A joint controlled robot
     robot = pam_mujoco.MujocoRobot(
-        pam_mujoco.RobotType.PAMY2, "robot", control=pam_mujoco.MujocoRobot.JOINT_CONTROL
+        pam_mujoco.RobotType.PAMY2,
+        "robot",
+        control=pam_mujoco.MujocoRobot.JOINT_CONTROL,
     )
     # A few balls, setting contact with robot's racket
     balls = pam_mujoco.MujocoItems("balls")
@@ -38,7 +39,8 @@ def run():
         ball = pam_mujoco.MujocoItem(
             ball_segment_ids[index],
             control=pam_mujoco.MujocoItem.CONSTANT_CONTROL,
-            contact_type=pam_mujoco.ContactTypes.racket1,
+            contact_robot1=True,
+            contact_table=True,
         )
         balls.add_ball(ball)
     graphics = True
@@ -62,8 +64,7 @@ def run():
     # or ~/.mpi-is/pam/context/ball_trajectories.hdf5
     trajectories_generator = context.BallTrajectories(group="originals")
 
-    for iteration in range(5):
-
+    for iteration in range(1):
         print("\niteration:", iteration)
 
         # reseting the contacts. Otherwise the balls that had a contact
@@ -138,6 +139,8 @@ def run():
             if stop:
                 break
             time.sleep(0.5)
+
+        time.sleep(1.0)
 
         # reset simulation to starting state
         handle.reset()
